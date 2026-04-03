@@ -757,25 +757,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Upload cover if provided
                 if (coverFileInput.files.length > 0) {
                     const file = coverFileInput.files[0];
-                    const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+                    const fileName = `${Date.now()}_${file.name.replace(/\\s/g, '_')}`;
                     const filePath = `album_covers/${fileName}`;
 
                     logBackend('Upload Album Cover', 'INFO', `Uploading cover: ${fileName}`);
-                    const { data, error: uploadError } = await sbClient.storage
-                        .from('films_media') // Renaming bucket or using existing one
-                        .upload(filePath, file);
-
-                    if (uploadError) {
-                        logBackend('Upload Album Cover', 'ERROR', 'Cover upload failed', uploadError);
-                        throw uploadError;
-                    }
+                    const storageRef = ref(storage, filePath);
+                    await uploadBytes(storageRef, file);
+                    coverUrl = await getDownloadURL(storageRef);
                     logBackend('Upload Album Cover', 'SUCCESS', 'Cover uploaded successfully');
-
-                    const { data: { publicUrl } } = sbClient.storage
-                        .from('films_media')
-                        .getPublicUrl(filePath);
-
-                    coverUrl = publicUrl;
                 }
 
                 const albumData = {
@@ -784,24 +773,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     category,
                     event_date: event_date || null,
                     access_level,
-                    cover_image_url: coverUrl
+                    cover_image_url: coverUrl,
+                    updated_at: new Date().toISOString()
                 };
 
                 let albumId = editingAlbumId;
-                let result;
                 if (editingAlbumId) {
                     logBackend('Update Album', 'INFO', `Updating album record: ${editingAlbumId}`, albumData);
-                    result = await sbClient.from('albums').update(albumData).eq('id', editingAlbumId).select();
+                    await updateDoc(doc(db, "albums", editingAlbumId), albumData);
                 } else {
+                    albumData.created_at = new Date().toISOString();
                     logBackend('Insert Album', 'INFO', 'Inserting new album record', albumData);
-                    result = await sbClient.from('albums').insert([albumData]).select();
+                    const docRef = await addDoc(collection(db, "albums"), albumData);
+                    albumId = docRef.id;
                 }
 
-                if (result.error) throw result.error;
-                logBackend('Save Album Record', 'SUCCESS', `Saved album: ${result.data[0].id}`);
-
-                // Get the ID (either existing or newly created)
-                albumId = result.data[0].id;
+                logBackend('Save Album Record', 'SUCCESS', `Saved album: ${albumId}`);
 
                 // --- Handle Bulk Gallery Photo Upload ---
                 const bulkPhotosInput = document.getElementById('addAlbumPhotosBulk');
@@ -813,38 +800,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const file = photos[i];
                         statusMsg.innerText = `UPLOADING (${i + 1}/${photos.length}): ${file.name}...`;
 
-                        const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+                        const fileName = `${Date.now()}_${file.name.replace(/\\s/g, '_')}`;
                         const filePath = `albums/${albumId}/${fileName}`;
-
-                        const { error: uploadError } = await sbClient.storage
-                            .from('films_media')
-                            .upload(filePath, file);
-
-                        if (uploadError) {
-                            console.error("Single image upload failed:", uploadError);
-                            continue; // Continue with others
+                        const storageRef = ref(storage, filePath);
+                        
+                        try {
+                            await uploadBytes(storageRef, file);
+                            const publicUrl = await getDownloadURL(storageRef);
+                            await addDoc(collection(db, "album_images"), {
+                                album_id: albumId,
+                                image_url: publicUrl,
+                                storage_path: filePath,
+                                order_index: i,
+                                created_at: new Date().toISOString()
+                            });
+                        } catch (err) {
+                            console.error("Single image upload failed:", err);
                         }
-
-                        const { data: { publicUrl } } = sbClient.storage
-                            .from('films_media')
-                            .getPublicUrl(filePath);
-
-                        await sbClient.from('album_images').insert([{
-                            album_id: albumId,
-                            image_url: publicUrl,
-                            order_index: i
-                        }]);
                     }
 
                     // Update photo count
-                    const { data: countData } = await sbClient
-                        .from('album_images')
-                        .select('id', { count: 'exact' })
-                        .eq('album_id', albumId);
-
-                    if (countData) {
-                        await sbClient.from('albums').update({ photo_count: countData.length }).eq('id', albumId);
-                    }
+                    const qObj = query(collection(db, "album_images"), where("album_id", "==", albumId));
+                    const snap = await getCountFromServer(qObj);
+                    const countData = snap.data().count;
+                    await updateDoc(doc(db, "albums", albumId), { photo_count: countData });
                 }
 
                 statusMsg.innerText = 'SUCCESS!';
@@ -1053,35 +1032,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             // 1. Get all images to clean storage
-            const { data: images } = await sbClient.from('album_images').select('image_url').eq('album_id', id);
+            const q = query(collection(db, "album_images"), where("album_id", "==", id));
+            const querySnapshot = await getDocs(q);
+            const images = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            const filesToRemove = [];
-            if (album.cover_image_url) {
-                const sp = getStoragePath(album.cover_image_url);
-                if (sp) filesToRemove.push(sp);
+            // Delete storage objects separately
+            if (album.cover_image_url && album.cover_image_url.includes('firebasestorage')) {
+                try {
+                    const coverRef = ref(storage, album.cover_image_url);
+                    await deleteObject(coverRef).catch(e => console.warn(e));
+                } catch(e) {}
             }
+
             if (images) {
-                images.forEach(img => {
-                    const sp = getStoragePath(img.image_url);
-                    if (sp) filesToRemove.push(sp);
-                });
+                for (let img of images) {
+                    if (img.image_url && img.image_url.includes('firebasestorage')) {
+                        try {
+                            const imgRef = ref(storage, img.storage_path || img.image_url);
+                            await deleteObject(imgRef).catch(e => console.warn(e));
+                        } catch(e) {}
+                    }
+                    await deleteDoc(doc(db, "album_images", img.id));
+                }
             }
 
-            if (filesToRemove.length > 0) {
-                logBackend('Delete Album Assets', 'INFO', `Removing ${filesToRemove.length} storage files for album ${id}`);
-                const { error: storageErr } = await sbClient.storage.from('films_media').remove(filesToRemove);
-                if (storageErr) logBackend('Delete Album Assets', 'ERROR', 'Could not delete some album assets', storageErr);
-            }
-
-            // 2. Cascade delete will handle album_images if foreign key is set to CASCADE
-            // If not, we might need to delete album_images manually
-            const { error: imgDelErr } = await sbClient.from('album_images').delete().eq('album_id', id);
-            const { error: albDelErr } = await sbClient.from('albums').delete().eq('id', id);
-
-            if (imgDelErr || albDelErr) {
-                logBackend('Delete Album', 'ERROR', `DB deletion failed for album ${id}`, { imgDelErr, albDelErr });
-                throw (imgDelErr || albDelErr);
-            }
+            await deleteDoc(doc(db, "albums", id));
 
             logBackend('Delete Album', 'SUCCESS', `Album '${album.title}' and all content removed`);
             fetchAlbums(true);
@@ -1730,7 +1705,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const submitBtn = document.getElementById('saveAboutProfileBtn');
             if (status) status.innerText = '';
 
-            if (!sbClient) {
+            if (!db) {
                 if (status) {
                     status.style.color = 'var(--color-error)';
                     status.innerText = 'DATABASE NOT CONNECTED';
@@ -1753,18 +1728,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (status) status.innerText = 'UPLOADING IMAGE...';
                     const file = fileInput.files[0];
                     const fileName = `portrait_${Date.now()}_${file.name}`;
+                    const filePath = `about/${fileName}`;
 
-                    const { data: uploadData, error: uploadError } = await sbClient.storage
-                        .from('films_media')
-                        .upload(fileName, file);
-
-                    if (uploadError) throw uploadError;
-
-                    const { data: publicUrlData } = sbClient.storage
-                        .from('films_media')
-                        .getPublicUrl(fileName);
-
-                    portraitUrl = publicUrlData.publicUrl;
+                    const storageRef = ref(storage, filePath);
+                    await uploadBytes(storageRef, file);
+                    portraitUrl = await getDownloadURL(storageRef);
                 }
 
                 const profileData = {
@@ -1780,23 +1748,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updated_at: new Date().toISOString()
                 };
 
-                console.log('[About] Executing Supabase update/insert', profileData);
+                console.log('[About] Executing Firebase update/insert', profileData);
 
-                // Try to see if record exists
-                const { data: current, error: checkError } = await sbClient.from('about_profile').select('id').maybeSingle();
-
-                let error;
-                if (current) {
-                    logBackend('Update Profile', 'INFO', `Updating profile record: ${current.id}`, profileData);
-                    const result = await sbClient.from('about_profile').update(profileData).eq('id', current.id);
-                    error = result.error;
+                if (window.currentProfileId && window.currentProfileId !== '') {
+                    logBackend('Update Profile', 'INFO', `Updating profile record: ${window.currentProfileId}`, profileData);
+                    await updateDoc(doc(db, "about_profile", window.currentProfileId), profileData);
                 } else {
                     logBackend('Insert Profile', 'INFO', 'Creating new profile record', profileData);
-                    const result = await sbClient.from('about_profile').insert([profileData]);
-                    error = result.error;
+                    profileData.created_at = new Date().toISOString();
+                    const docRef = await addDoc(collection(db, "about_profile"), profileData);
+                    window.currentProfileId = docRef.id;
                 }
 
-                if (error) throw error;
                 logBackend('Save Profile', 'SUCCESS', 'Profile saved to database');
 
                 if (status) {

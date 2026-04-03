@@ -24,12 +24,17 @@ export async function getFeaturedFilms() {
         const q = query(
             collection(db, "films"), 
             where("is_selected_work", "==", true),
-            where("status", "==", "PUBLISHED"),
-            orderBy("created_at", "desc"),
-            limit(4)
+            where("status", "==", "PUBLISHED")
         );
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const films = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Local sort to avoid composite index requirement
+        films.sort((a, b) => {
+            const timeA = a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
+            const timeB = b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
+            return timeB - timeA; // desc
+        });
+        return films.slice(0, 4);
     } catch (error) {
         console.error("Error fetching featured films:", error);
         return [];
@@ -41,9 +46,11 @@ export async function getFeaturedFilms() {
  */
 export async function getTestimonials() {
     try {
-        const q = query(collection(db, "testimonials"), where("is_visible", "==", true), orderBy("display_order", "asc"));
+        const q = query(collection(db, "testimonials"), where("is_visible", "==", true));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const testimonials = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        testimonials.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)); // asc
+        return testimonials;
     } catch (error) {
         console.error("Error fetching testimonials:", error);
         return [];
@@ -55,9 +62,11 @@ export async function getTestimonials() {
  */
 export async function getPackages() {
     try {
-        const q = query(collection(db, "packages"), where("is_visible", "==", true), orderBy("display_order", "asc"));
+        const q = query(collection(db, "packages"), where("is_visible", "==", true));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const packages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        packages.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)); // asc
+        return packages;
     } catch (error) {
         console.error("Error fetching packages:", error);
         return [];
@@ -114,9 +123,15 @@ export async function submitInquiry(data) {
  */
 export async function getAlbums() {
     try {
-        const q = query(collection(db, "albums"), where("access_level", "==", "PUBLIC"), orderBy("event_date", "desc"));
+        const q = query(collection(db, "albums"), where("access_level", "==", "PUBLIC"));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        albums.sort((a, b) => {
+            const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || 0;
+            const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || 0;
+            return timeB - timeA; // desc
+        });
+        return albums;
     } catch (error) {
         console.error("Error fetching albums:", error);
         return [];
@@ -128,9 +143,11 @@ export async function getAlbums() {
  */
 export async function getAlbumImages(albumId) {
     try {
-        const q = query(collection(db, "album_images"), where("album_id", "==", albumId), orderBy("order_index", "asc"));
+        const q = query(collection(db, "album_images"), where("album_id", "==", albumId));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const images = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        images.sort((a, b) => (a.order_index || 0) - (b.order_index || 0)); // asc
+        return images;
     } catch (error) {
         console.error("Error fetching album images:", error);
         return [];

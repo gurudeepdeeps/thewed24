@@ -2,12 +2,12 @@
  * admin.js - Logic for Admin Dashboard SPA (Firebase Version)
  */
 import { auth, db, storage } from './firebase.js';
-import { 
+import {
     collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, limit, getDoc,
     getCountFromServer
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { 
-    ref, uploadBytes, getDownloadURL, deleteObject 
+import {
+    ref, uploadBytes, getDownloadURL, deleteObject
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -21,7 +21,7 @@ const logBackend = (operation, status, details, error = null) => {
         ERROR: 'background: #450a0a; color: #f87171; padding: 2px 5px; border-radius: 2px; font-weight: bold;',
         INFO: 'background: #1e3a8a; color: #60a5fa; padding: 2px 5px; border-radius: 2px; font-weight: bold;'
     };
-    
+
     console.group(`Backend: ${operation} - ${status} (${timestamp})`);
     console.log(`%c${status}`, styles[status] || '', details);
     if (error) console.error('Full Error Object:', error);
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleLogout(e) {
         if (e) e.preventDefault();
         console.log("Logging out...");
-        
+
         try {
             await signOut(auth);
             logBackend('Sign Out', 'SUCCESS', 'Firebase session terminated');
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshot = await getCountFromServer(collection(db, "films"));
             const filmCount = snapshot.data().count;
             const fStat = document.getElementById('statTotalFilms');
-            if(fStat) fStat.innerHTML = `${filmCount} <span class="material-icons text-primary text-sm">trending_up</span>`;
+            if (fStat) fStat.innerHTML = `${filmCount} <span class="material-icons text-primary text-sm">trending_up</span>`;
 
             if (reset && films.length === 0) {
                 listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO FILMS IN DB. CLICK UPLOAD.</div>';
@@ -183,11 +183,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const deleteBtn = document.getElementById('deleteSelectedBtn');
             const countSpn = document.getElementById('selectedCount');
-            
+
             function updateBulkDeleteUI() {
                 const checkedCount = document.querySelectorAll('.film-bulk-checkbox:checked').length;
-                if(deleteBtn && countSpn) {
-                    if(checkedCount > 0) {
+                if (deleteBtn && countSpn) {
+                    if (checkedCount > 0) {
                         deleteBtn.style.display = 'flex';
                         countSpn.innerText = checkedCount;
                     } else {
@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.film-bulk-checkbox').forEach(cb => {
                 cb.addEventListener('change', updateBulkDeleteUI);
             });
-            updateBulkDeleteUI(); 
-            
+            updateBulkDeleteUI();
+
             currentFilmsPage++;
 
             if (loadMoreBtn) {
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     window.deleteFilm = async function (id, event) {
         if (event) event.stopPropagation();
-        
+
         const film = window.filmsMap[id];
         if (!film) return;
 
@@ -235,12 +235,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 // 1. Remove from Firestore
                 await deleteDoc(doc(db, "films", id));
-                
+
                 // 2. Remove from Storage (Optional - depends on if we have storage path)
                 // Note: In Firebase, it's better to store the full path or GS URL
                 // If it's a firebase storage URL, it might look like: https://firebasestorage.googleapis.com/v0/b/.../o/films%2FMEDIA_ID...
                 // For now, we'll just delete the record. Cleanup of storage can be done via cloud functions or manual if needed.
-                
+
                 logBackend('Delete Film', 'SUCCESS', `Film '${film.title}' (${id}) removed from Firestore`);
                 fetchFilms(true);
             } catch (error) {
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.albumsMap = {};
     let editingAlbumId = null;
     let currentManagingAlbumId = null;
-    
+
     // --- SUPABASE TESTIMONIALS INTEGRATION ---
     let currentTestimonialsFilter = 'PUBLISHED';
     window.testimonialsMap = {};
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshotCount = await getCountFromServer(collection(db, "albums"));
             const albumCount = snapshotCount.data().count;
             const aStat = document.getElementById('statTotalAlbums');
-            if(aStat) aStat.innerHTML = `${albumCount} <span class="material-icons text-primary text-sm">photo_library</span>`;
+            if (aStat) aStat.innerHTML = `${albumCount} <span class="material-icons text-primary text-sm">photo_library</span>`;
 
             if (reset && albums.length === 0) {
                 listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO ALBUMS IN DB. CLICK CREATE.</div>';
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let html = '';
             albums.forEach(album => {
                 window.albumsMap[album.id] = album;
-                
+
                 let dateStr = 'N/A';
                 const dateVal = album.event_date || album.created_at;
                 if (dateVal && dateVal.toDate) {
@@ -364,8 +364,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             function updateAlbumBulkDeleteUI() {
                 const checkedCount = document.querySelectorAll('.album-bulk-checkbox:checked').length;
-                if(deleteSelectedBtn && countSpn) {
-                    if(checkedCount > 0) {
+                if (deleteSelectedBtn && countSpn) {
+                    if (checkedCount > 0) {
                         deleteSelectedBtn.style.display = 'flex';
                         countSpn.innerText = checkedCount;
                     } else {
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             document.querySelectorAll('.album-bulk-checkbox').forEach(cb => cb.addEventListener('change', updateAlbumBulkDeleteUI));
             updateAlbumBulkDeleteUI();
-            
+
             currentAlbumsPage++;
 
             if (loadMoreBtn) {
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const q = query(collection(db, "packages"), orderBy("created_at", "desc"));
             const querySnapshot = await getDocs(q);
             const packages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
+
             logBackend('Fetch Packages', 'SUCCESS', `Loaded ${packages.length} packages from Firestore`);
 
             if (packages.length === 0) {
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             packages.forEach(pkg => {
                 window.packagesMap[pkg.id] = pkg;
                 const formattedPrice = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pkg.price);
-                
+
                 html += `
                     <div class="film-card fade-in">
                         <div class="drag-handle"><span class="material-icons opacity-30">inventory_2</span></div>
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addPackageModal = document.getElementById('addPackageModal');
     const newPackageForm = document.getElementById('newPackageForm');
     const pkgStatusMsg = document.getElementById('packageStatusMsg');
-    
+
     if (document.getElementById('addPackageBtn')) {
         document.getElementById('addPackageBtn').addEventListener('click', () => {
             editingPackageId = null;
@@ -487,29 +487,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    window.editPackage = function(id, event) {
+    window.editPackage = function (id, event) {
         if (event) event.stopPropagation();
         editingPackageId = id;
         const pkg = window.packagesMap[id];
-        
+
         document.getElementById('packageModalTitle').innerText = 'Edit Package';
         document.getElementById('savePkgBtn').innerText = 'UPDATE PACKAGE';
-        
+
         document.getElementById('pkgName').value = pkg.name;
         document.getElementById('pkgStatus').value = pkg.status;
         document.getElementById('pkgPrice').value = pkg.price;
         document.getElementById('pkgWhatsAppLabel').value = pkg.whatsapp_label || '';
         document.getElementById('pkgIsSignature').checked = pkg.is_signature || false;
         document.getElementById('pkgFeatures').value = pkg.features_summary || '';
-        
+
         addPackageModal.style.display = 'flex';
         setTimeout(() => addPackageModal.classList.add('active'), 50);
     };
 
-    window.deletePackage = async function(id, event) {
+    window.deletePackage = async function (id, event) {
         if (event) event.stopPropagation();
         if (!confirm('Permanently delete this package?')) return;
-        
+
         try {
             await deleteDoc(doc(db, "packages", id));
             logBackend('Delete Package', 'SUCCESS', `Package ${id} deleted`);
@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             const saveBtn = document.getElementById('savePkgBtn');
             const originalBtnText = saveBtn.innerText;
-            
+
             saveBtn.innerText = 'SAVING...';
             saveBtn.disabled = true;
             pkgStatusMsg.style.display = 'none';
@@ -554,7 +554,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 logBackend('Save Package', 'SUCCESS', editingPackageId ? `Updated package ${editingPackageId}` : 'Created new package');
                 pkgStatusMsg.innerText = editingPackageId ? 'PACKAGE UPDATED' : 'PACKAGE CREATED';
                 pkgStatusMsg.style.display = 'block';
-                
+
                 setTimeout(() => {
                     if (addPackageModal) {
                         addPackageModal.classList.remove('active');
@@ -599,7 +599,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const q = query(
-                collection(db, "testimonials"), 
+                collection(db, "testimonials"),
                 where("status", "==", currentTestimonialsFilter),
                 orderBy("created_at", "desc")
             );
@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             testimonials.forEach(item => {
                 window.testimonialsMap[item.id] = item;
                 const stars = '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating);
-                
+
                 html += `
                     <div class="film-card fade-in">
                         <div class="drag-handle"><span class="material-icons opacity-30">comment</span></div>
@@ -708,7 +708,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('saveAlbumBtn').innerText = 'CREATE ALBUM';
             document.getElementById('newAlbumForm').reset();
             document.getElementById('currentAlbumCoverPreview').classList.add('hidden');
-            
+
             const modal = document.getElementById('addAlbumModal');
             if (modal) {
                 modal.style.display = 'flex';
@@ -738,14 +738,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             const saveBtn = document.getElementById('saveAlbumBtn');
             const statusMsg = document.getElementById('albumUploadStatusMsg');
-            
+
             const title = document.getElementById('addAlbumTitle').value;
             const client_name = document.getElementById('addAlbumClient').value;
             const category = document.getElementById('addAlbumCategory').value;
             const event_date = document.getElementById('addAlbumDate').value;
             const access_level = document.getElementById('addAlbumAccess').value;
             const coverFileInput = document.getElementById('addAlbumCover');
-            
+
             try {
                 saveBtn.disabled = true;
                 saveBtn.innerText = 'SAVING...';
@@ -753,28 +753,28 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusMsg.style.display = 'block';
 
                 let coverUrl = editingAlbumId ? window.albumsMap[editingAlbumId].cover_image_url : null;
-                
+
                 // Upload cover if provided
                 if (coverFileInput.files.length > 0) {
                     const file = coverFileInput.files[0];
                     const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
                     const filePath = `album_covers/${fileName}`;
-                    
+
                     logBackend('Upload Album Cover', 'INFO', `Uploading cover: ${fileName}`);
                     const { data, error: uploadError } = await sbClient.storage
                         .from('films_media') // Renaming bucket or using existing one
                         .upload(filePath, file);
-                    
+
                     if (uploadError) {
                         logBackend('Upload Album Cover', 'ERROR', 'Cover upload failed', uploadError);
                         throw uploadError;
                     }
                     logBackend('Upload Album Cover', 'SUCCESS', 'Cover uploaded successfully');
-                    
+
                     const { data: { publicUrl } } = sbClient.storage
                         .from('films_media')
                         .getPublicUrl(filePath);
-                    
+
                     coverUrl = publicUrl;
                 }
 
@@ -799,7 +799,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (result.error) throw result.error;
                 logBackend('Save Album Record', 'SUCCESS', `Saved album: ${result.data[0].id}`);
-                
+
                 // Get the ID (either existing or newly created)
                 albumId = result.data[0].id;
 
@@ -808,18 +808,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (bulkPhotosInput && bulkPhotosInput.files.length > 0) {
                     const photos = bulkPhotosInput.files;
                     statusMsg.innerText = `UPLOADING ${photos.length} GALLERY PHOTOS...`;
-                    
+
                     for (let i = 0; i < photos.length; i++) {
                         const file = photos[i];
                         statusMsg.innerText = `UPLOADING (${i + 1}/${photos.length}): ${file.name}...`;
-                        
+
                         const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
                         const filePath = `albums/${albumId}/${fileName}`;
-                        
+
                         const { error: uploadError } = await sbClient.storage
                             .from('films_media')
                             .upload(filePath, file);
-                        
+
                         if (uploadError) {
                             console.error("Single image upload failed:", uploadError);
                             continue; // Continue with others
@@ -841,7 +841,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         .from('album_images')
                         .select('id', { count: 'exact' })
                         .eq('album_id', albumId);
-                    
+
                     if (countData) {
                         await sbClient.from('albums').update({ photo_count: countData.length }).eq('id', albumId);
                     }
@@ -865,43 +865,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Manage Album Images Global
-    window.manageAlbumImages = async function(id, event) {
-        if(event) event.stopPropagation();
+    window.manageAlbumImages = async function (id, event) {
+        if (event) event.stopPropagation();
         const album = window.albumsMap[id];
-        if(!album) return;
-        
+        if (!album) return;
+
         currentManagingAlbumId = id;
         document.getElementById('manageImagesSubtitle').innerText = `ALBUM: ${album.title} | CLIENT: ${album.client_name}`;
-        
+
         // Show Modal
         const modal = document.getElementById('manageImagesModal');
         if (modal) {
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 50);
         }
-        
+
         fetchAlbumImages(id);
     }
 
     async function fetchAlbumImages(albumId) {
         const grid = document.getElementById('albumImagesGrid');
-        if(!grid) return;
-        
+        if (!grid) return;
+
         grid.innerHTML = '<div class="col-span-full opacity-50 text-center py-8 tracking-widest uppercase text-xs">LOADING PHOTOS...</div>';
-        
+
         try {
             const q = query(collection(db, "album_images"), where("album_id", "==", albumId), orderBy("order_index", "asc"));
             const querySnapshot = await getDocs(q);
             const images = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
+
             logBackend('Fetch Album Images', 'SUCCESS', `Loaded ${images.length} images for album ${albumId}`);
-            
+
             if (images.length === 0) {
                 grid.innerHTML = '<div class="col-span-full opacity-50 text-center py-8 tracking-widest uppercase text-xs">NO PHOTOS IN THIS ALBUM. UPLOAD SOME BELOW.</div>';
                 await updateDoc(doc(db, "albums", albumId), { photo_count: 0 });
                 return;
             }
-            
+
             await updateDoc(doc(db, "albums", albumId), { photo_count: images.length });
 
             let html = '';
@@ -916,7 +916,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             });
             grid.innerHTML = html;
-            
+
         } catch (err) {
             logBackend('Fetch Album Images', 'ERROR', `Failed to load images for album ${albumId}`, err);
             grid.innerHTML = `<div class="col-span-full text-error text-center py-8 text-xs uppercase">ERROR: ${err.message}</div>`;
@@ -929,23 +929,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadAlbumPhotos.addEventListener('change', async (e) => {
             const files = e.target.files;
             if (!files.length || !currentManagingAlbumId) return;
-            
+
             const status = document.getElementById('photosUploadStatus');
             status.style.display = 'block';
             status.innerText = `UPLOADING ${files.length} PHOTOS...`;
-            
+
             try {
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
                     const filePath = `albums/${currentManagingAlbumId}/${fileName}`;
                     const storageRef = ref(storage, filePath);
-                    
-                    status.innerText = `UPLOADING ${i+1}/${files.length}: ${file.name}...`;
+
+                    status.innerText = `UPLOADING ${i + 1}/${files.length}: ${file.name}...`;
 
                     await uploadBytes(storageRef, file);
                     const publicUrl = await getDownloadURL(storageRef);
-                    
+
                     // Insert into album_images
                     await addDoc(collection(db, "album_images"), {
                         album_id: currentManagingAlbumId,
@@ -955,14 +955,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         created_at: new Date().toISOString()
                     });
                 }
-                
+
                 status.innerText = 'SUCCESSFULLY UPLOADED ALL PHOTOS';
                 logBackend('Batch Gallery Upload', 'SUCCESS', `Uploaded ${files.length} images to album ${currentManagingAlbumId}`);
                 setTimeout(() => status.style.display = 'none', 3000);
                 uploadAlbumPhotos.value = ''; // Clear input
                 fetchAlbumImages(currentManagingAlbumId);
                 fetchAlbums(true); // Refresh main list to show count
-                
+
             } catch (err) {
                 logBackend('Batch Gallery Upload', 'ERROR', `Failed during batch upload to ${currentManagingAlbumId}`, err);
                 status.innerText = 'UPLOAD FAILED: ' + err.message;
@@ -971,15 +971,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Global image delete
-    window.deleteAlbumImage = async function(id, event) {
-        if(event) event.stopPropagation();
-        if(!confirm('Delete this photo permanently?')) return;
-        
+    window.deleteAlbumImage = async function (id, event) {
+        if (event) event.stopPropagation();
+        if (!confirm('Delete this photo permanently?')) return;
+
         try {
             // 1. Get record to find storage path
             const docRef = doc(db, "album_images", id);
             const docSnap = await getDoc(docRef);
-            
+
             if (docSnap.exists()) {
                 const imgData = docSnap.data();
                 if (imgData.storage_path) {
@@ -987,13 +987,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await deleteObject(storageRef).catch(e => console.warn("Storage deletion failed, record will still be removed", e));
                 }
             }
-                
+
             // 2. Delete from Firestore
             await deleteDoc(docRef);
-            
+
             logBackend('Delete Album Image', 'SUCCESS', `Deleted image record ${id}`);
             fetchAlbumImages(currentManagingAlbumId);
-            
+
         } catch (err) {
             logBackend('Delete Album Image', 'ERROR', `Failed to delete image ${id}`, err);
             alert('Failed to delete photo: ' + err.message);
@@ -1015,29 +1015,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Global edit album
-    window.editAlbum = function(id, event) {
-        if(event) event.stopPropagation();
+    window.editAlbum = function (id, event) {
+        if (event) event.stopPropagation();
         const album = window.albumsMap[id];
-        if(!album) return;
-        
+        if (!album) return;
+
         editingAlbumId = id;
         document.getElementById('albumModalTitle').innerText = 'Edit Album Details';
         document.getElementById('saveAlbumBtn').innerText = 'SAVE CHANGES';
-        
+
         document.getElementById('addAlbumTitle').value = album.title;
         document.getElementById('addAlbumClient').value = album.client_name;
         document.getElementById('addAlbumCategory').value = album.category || 'WEDDING';
         document.getElementById('addAlbumDate').value = album.event_date || '';
         document.getElementById('addAlbumAccess').value = album.access_level || 'PRIVATE';
-        
+
         const preview = document.getElementById('currentAlbumCoverPreview');
-        if(album.cover_image_url) {
+        if (album.cover_image_url) {
             preview.classList.remove('hidden');
             preview.innerHTML = `Current: <a href="${album.cover_image_url}" target="_blank" class="text-primary hover:underline">View Cover</a>`;
         } else {
             preview.classList.add('hidden');
         }
-        
+
         const modal = document.getElementById('addAlbumModal');
         if (modal) {
             modal.style.display = 'flex';
@@ -1046,38 +1046,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Global delete album
-    window.deleteAlbum = async function(id, event) {
-        if(event) event.stopPropagation();
+    window.deleteAlbum = async function (id, event) {
+        if (event) event.stopPropagation();
         const album = window.albumsMap[id];
-        if(!album || !confirm(`Delete album '${album.title}' and all its photos?`)) return;
-        
+        if (!album || !confirm(`Delete album '${album.title}' and all its photos?`)) return;
+
         try {
             // 1. Get all images to clean storage
             const { data: images } = await sbClient.from('album_images').select('image_url').eq('album_id', id);
-            
+
             const filesToRemove = [];
-            if(album.cover_image_url) {
+            if (album.cover_image_url) {
                 const sp = getStoragePath(album.cover_image_url);
-                if(sp) filesToRemove.push(sp);
+                if (sp) filesToRemove.push(sp);
             }
-            if(images) {
+            if (images) {
                 images.forEach(img => {
                     const sp = getStoragePath(img.image_url);
-                    if(sp) filesToRemove.push(sp);
+                    if (sp) filesToRemove.push(sp);
                 });
             }
-            
-            if(filesToRemove.length > 0) {
+
+            if (filesToRemove.length > 0) {
                 logBackend('Delete Album Assets', 'INFO', `Removing ${filesToRemove.length} storage files for album ${id}`);
                 const { error: storageErr } = await sbClient.storage.from('films_media').remove(filesToRemove);
                 if (storageErr) logBackend('Delete Album Assets', 'ERROR', 'Could not delete some album assets', storageErr);
             }
-            
+
             // 2. Cascade delete will handle album_images if foreign key is set to CASCADE
             // If not, we might need to delete album_images manually
             const { error: imgDelErr } = await sbClient.from('album_images').delete().eq('album_id', id);
             const { error: albDelErr } = await sbClient.from('albums').delete().eq('id', id);
-            
+
             if (imgDelErr || albDelErr) {
                 logBackend('Delete Album', 'ERROR', `DB deletion failed for album ${id}`, { imgDelErr, albDelErr });
                 throw (imgDelErr || albDelErr);
@@ -1085,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             logBackend('Delete Album', 'SUCCESS', `Album '${album.title}' and all content removed`);
             fetchAlbums(true);
-            
+
         } catch (err) {
             logBackend('Delete Album', 'ERROR', `Critical failure during album deletion ${id}`, err);
             alert('Delete failed: ' + err.message);
@@ -1132,7 +1132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             const saveBtn = document.getElementById('saveTestiBtn');
             const statusMsg = document.getElementById('testimonialStatusMsg');
-            
+
             const client_name = document.getElementById('testiClient').value.trim();
             const status = document.getElementById('testiStatus').value;
             const review_text = document.getElementById('testiText').value.trim();
@@ -1173,7 +1173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    window.editTestimonial = function(id, event) {
+    window.editTestimonial = function (id, event) {
         if (event) event.stopPropagation();
         const item = window.testimonialsMap[id];
         if (!item) return;
@@ -1181,11 +1181,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         editingTestimonialId = id;
         document.getElementById('testimonialModalTitle').innerText = 'Edit Testimonial';
         document.getElementById('saveTestiBtn').innerText = 'SAVE CHANGES';
-        
+
         document.getElementById('testiClient').value = item.client_name;
         document.getElementById('testiStatus').value = item.status || 'PUBLISHED';
         document.getElementById('testiText').value = item.review_text;
-        
+
         const sel = document.getElementById('testiSelected');
         if (sel) sel.checked = item.is_selected_home || false;
 
@@ -1194,31 +1194,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 50);
         }
-      window.deleteTestimonial = async function(id, event) {
-        if (event) event.stopPropagation();
-        if (!confirm('Delete this testimonial permanently?')) return;
+        window.deleteTestimonial = async function (id, event) {
+            if (event) event.stopPropagation();
+            if (!confirm('Delete this testimonial permanently?')) return;
 
-        try {
-            await deleteDoc(doc(db, "testimonials", id));
-            logBackend('Delete Testimonial', 'SUCCESS', `Deleted testimonial ${id}`);
-            fetchTestimonials(true);
-        } catch (err) {
-            logBackend('Delete Testimonial', 'ERROR', `Failed to delete testimonial ${id}`, err);
-            alert('Delete failed: ' + err.message);
-        }
+            try {
+                await deleteDoc(doc(db, "testimonials", id));
+                logBackend('Delete Testimonial', 'SUCCESS', `Deleted testimonial ${id}`);
+                fetchTestimonials(true);
+            } catch (err) {
+                logBackend('Delete Testimonial', 'ERROR', `Failed to delete testimonial ${id}`, err);
+                alert('Delete failed: ' + err.message);
+            }
+        };
+
+        window.approveTestimonial = async function (id, event) {
+            if (event) event.stopPropagation();
+            try {
+                await updateDoc(doc(db, "testimonials", id), { status: 'PUBLISHED' });
+                logBackend('Approve Testimonial', 'SUCCESS', `Published testimonial ${id}`);
+                fetchTestimonials(true);
+            } catch (err) {
+                logBackend('Approve Testimonial', 'ERROR', `Failed to approve testimonial ${id}`, err);
+                alert('Approval failed: ' + err.message);
+            }
+        };
     };
-
-    window.approveTestimonial = async function(id, event) {
-        if (event) event.stopPropagation();
-        try {
-            await updateDoc(doc(db, "testimonials", id), { status: 'PUBLISHED' });
-            logBackend('Approve Testimonial', 'SUCCESS', `Published testimonial ${id}`);
-            fetchTestimonials(true);
-        } catch (err) {
-            logBackend('Approve Testimonial', 'ERROR', `Failed to approve testimonial ${id}`, err);
-            alert('Approval failed: ' + err.message);
-        }
-    };    };
 
     // Bulk Delete logic
     const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
@@ -1227,12 +1228,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             const checkedBoxes = document.querySelectorAll('.film-bulk-checkbox:checked');
             const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
-            
+
             if (idsToDelete.length === 0) return;
 
             if (confirm(`Delete ${idsToDelete.length} selected films permanently?`)) {
                 deleteSelectedBtn.innerText = 'DELETING...';
-                
+
                 try {
                     for (const id of idsToDelete) {
                         await deleteDoc(doc(db, "films", id));
@@ -1241,10 +1242,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } catch (err) {
                     logBackend('Bulk Delete', 'ERROR', 'Failed to delete records from Firestore', err);
                 }
-                
+
                 deleteSelectedBtn.style.display = 'none';
                 deleteSelectedBtn.innerText = 'DELETE SELECTED';
-                
+
                 fetchFilms(true);
             }
         });
@@ -1256,22 +1257,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadFilmBtn.addEventListener('click', (e) => {
             e.preventDefault();
             editingFilmId = null;
-            
+
             const titleEl = document.getElementById('filmModalTitle');
-            if(titleEl) titleEl.innerText = 'Upload New Film';
-            
+            if (titleEl) titleEl.innerText = 'Upload New Film';
+
             const btnEl = document.getElementById('saveFilmBtn');
-            if(btnEl) btnEl.innerText = 'UPLOAD FILM';
+            if (btnEl) btnEl.innerText = 'UPLOAD FILM';
 
             // Clear HTML previews implicitly
             const lblC = document.getElementById('currentCoverLabel');
-            if(lblC) lblC.classList.add('hidden');
+            if (lblC) lblC.classList.add('hidden');
             const prC = document.getElementById('currentCoverPreview');
-            if(prC) prC.classList.add('hidden');
+            if (prC) prC.classList.add('hidden');
             const lblV = document.getElementById('currentVideoLabel');
-            if(lblV) lblV.classList.add('hidden');
+            if (lblV) lblV.classList.add('hidden');
             const prV = document.getElementById('currentVideoPreview');
-            if(prV) prV.classList.add('hidden');
+            if (prV) prV.classList.add('hidden');
 
             const modal = document.getElementById('addFilmModal');
             if (modal) {
@@ -1282,35 +1283,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Edit Film (Global)
-    window.editFilm = function(id, event) {
-        if(event) event.stopPropagation();
+    window.editFilm = function (id, event) {
+        if (event) event.stopPropagation();
         const film = window.filmsMap[id];
-        if(!film) return;
-        
+        if (!film) return;
+
         editingFilmId = id;
 
         // Pre-fill form
         document.getElementById('addFilmCouple').value = film.couple_name || film.title || '';
         document.getElementById('addFilmCategory').value = film.category || 'WEDDING FILM';
         document.getElementById('addFilmStatus').value = film.status || 'PUBLISHED';
-        
+
         const selectedCheckbox = document.getElementById('addFilmSelected');
         if (selectedCheckbox) {
             selectedCheckbox.checked = film.is_selected_work || false;
         }
         // File inputs cannot be pre-filled due to browser security
-        
+
         const titleEl = document.getElementById('filmModalTitle');
-        if(titleEl) titleEl.innerText = 'Edit Film';
-        
+        if (titleEl) titleEl.innerText = 'Edit Film';
+
         const btnEl = document.getElementById('saveFilmBtn');
-        if(btnEl) btnEl.innerText = 'SAVE CHANGES';
-        
+        if (btnEl) btnEl.innerText = 'SAVE CHANGES';
+
         // Show current data helper texts
         const coverLabel = document.getElementById('currentCoverLabel');
         const coverPreview = document.getElementById('currentCoverPreview');
-        if(coverPreview && coverLabel) {
-            if(film.cover_image_url && film.cover_image_url !== 'assets/cinematic-frame.jpg') {
+        if (coverPreview && coverLabel) {
+            if (film.cover_image_url && film.cover_image_url !== 'assets/cinematic-frame.jpg') {
                 coverLabel.classList.remove('hidden');
                 coverPreview.classList.remove('hidden');
                 coverPreview.innerHTML = `Current: <a href="${film.cover_image_url}" target="_blank" class="text-primary hover:underline">View Image</a>`;
@@ -1320,11 +1321,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 coverPreview.innerText = '';
             }
         }
-        
+
         const videoLabel = document.getElementById('currentVideoLabel');
         const videoPreview = document.getElementById('currentVideoPreview');
-        if(videoPreview && videoLabel) {
-            if(film.video_url) {
+        if (videoPreview && videoLabel) {
+            if (film.video_url) {
                 videoLabel.classList.remove('hidden');
                 videoPreview.classList.remove('hidden');
                 videoPreview.innerHTML = `Current: <a href="${film.video_url}" target="_blank" class="text-primary hover:underline">View Video</a>`;
@@ -1334,7 +1335,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 videoPreview.innerText = '';
             }
         }
-        
+
         // Show Modal
         const modal = document.getElementById('addFilmModal');
         if (modal) {
@@ -1354,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 addFilmModal.style.display = 'none';
                 if (newFilmForm) newFilmForm.reset();
-                
+
                 // Reset select explicitly if needed or rely on reset()
                 const selectedCheckbox = document.getElementById('addFilmSelected');
                 if (selectedCheckbox) selectedCheckbox.checked = false;
@@ -1387,7 +1388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveBtn.disabled = true;
 
             const coupleName = document.getElementById('addFilmCouple').value.trim();
-            const title = coupleName; 
+            const title = coupleName;
             const category = document.getElementById('addFilmCategory').value.trim();
             const status = document.getElementById('addFilmStatus').value;
             const isFeatured = document.getElementById('addFilmSelected').checked;
@@ -1401,7 +1402,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const q = query(collection(db, "films"), where("is_selected_work", "==", true));
                     const snapshot = await getCountFromServer(q);
                     let count = snapshot.data().count;
-                    
+
                     // If editing, and it was already featured, count is effectively one less
                     if (editingFilmId && window.filmsMap[editingFilmId].is_selected_work) {
                         count--;
@@ -1412,7 +1413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                let coverImageUrl = editingFilmId ? window.filmsMap[editingFilmId].cover_image_url : 'assets/cinematic-frame.jpg'; 
+                let coverImageUrl = editingFilmId ? window.filmsMap[editingFilmId].cover_image_url : 'assets/cinematic-frame.jpg';
                 let videoUrl = (editingFilmId && window.filmsMap[editingFilmId].video_url) ? window.filmsMap[editingFilmId].video_url : '';
 
                 // 1. Upload Cover Image
@@ -1670,11 +1671,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Image Preview Logic ---
     const aboutPortraitFile = document.getElementById('aboutPortraitFile');
     if (aboutPortraitFile) {
-        aboutPortraitFile.addEventListener('change', function() {
+        aboutPortraitFile.addEventListener('change', function () {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     document.getElementById('aboutPortraitPreview').src = e.target.result;
                     document.getElementById('aboutPortraitPreview').style.opacity = '1';
                 }
@@ -1687,7 +1688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const q = query(collection(db, "about_profile"), limit(1));
             const querySnapshot = await getDocs(q);
-            
+
             if (querySnapshot.empty) {
                 logBackend('Fetch About Profile', 'INFO', 'No profile record found');
                 return;
@@ -1695,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
             logBackend('Fetch About Profile', 'SUCCESS', 'Profile record loaded');
-            
+
             document.getElementById('aboutName').value = data.name || '';
             document.getElementById('aboutSubName').value = data.sub_name || '';
             document.getElementById('aboutPortraitUrl').value = data.portrait_url || '';
@@ -1709,7 +1710,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('aboutStat2Val').value = data.stat2_val || '';
             document.getElementById('aboutStat2Label').value = data.stat2_label || '';
             document.getElementById('aboutManifesto').value = data.manifesto_quote || '';
-            
+
             // Store ID for update
             window.currentProfileId = data.id;
 
@@ -1724,11 +1725,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log('[About] Form submission triggered');
-            
+
             const status = document.getElementById('aboutProfileStatus');
             const submitBtn = document.getElementById('saveAboutProfileBtn');
             if (status) status.innerText = '';
-            
+
             if (!sbClient) {
                 if (status) {
                     status.style.color = 'var(--color-error)';
@@ -1745,14 +1746,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (status) status.innerText = 'SAVING...';
 
                 let portraitUrl = document.getElementById('aboutPortraitUrl').value;
-                
+
                 // 1. Upload logic if file selected
                 const fileInput = document.getElementById('aboutPortraitFile');
                 if (fileInput && fileInput.files.length > 0) {
                     if (status) status.innerText = 'UPLOADING IMAGE...';
                     const file = fileInput.files[0];
                     const fileName = `portrait_${Date.now()}_${file.name}`;
-                    
+
                     const { data: uploadData, error: uploadError } = await sbClient.storage
                         .from('films_media')
                         .upload(fileName, file);
@@ -1762,7 +1763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const { data: publicUrlData } = sbClient.storage
                         .from('films_media')
                         .getPublicUrl(fileName);
-                    
+
                     portraitUrl = publicUrlData.publicUrl;
                 }
 
@@ -1783,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Try to see if record exists
                 const { data: current, error: checkError } = await sbClient.from('about_profile').select('id').maybeSingle();
-                
+
                 let error;
                 if (current) {
                     logBackend('Update Profile', 'INFO', `Updating profile record: ${current.id}`, profileData);
@@ -1797,11 +1798,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (error) throw error;
                 logBackend('Save Profile', 'SUCCESS', 'Profile saved to database');
-                
+
                 if (status) {
                     status.style.color = '#2ecc71';
                     status.innerText = 'PROFILE UPDATED SUCCESSFULLY!';
-                    setTimeout(() => { if(status) status.innerText = ''; }, 3000);
+                    setTimeout(() => { if (status) status.innerText = ''; }, 3000);
                 }
             } catch (err) {
                 console.error('[About] Save failed:', err);
@@ -1822,7 +1823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchAboutValues() {
         const list = document.getElementById('aboutValuesList');
         if (!list) return;
-        
+
         try {
             const q = query(collection(db, "about_values"), orderBy("display_order", "asc"));
             const querySnapshot = await getDocs(q);
@@ -1830,7 +1831,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             logBackend('Fetch About Values', 'SUCCESS', `Loaded ${data.length} core values`);
             aboutValuesMap = {};
-            
+
             if (!data || data.length === 0) {
                 list.innerHTML = '<div class="opacity-50 text-center py-12 tracking-widest uppercase text-sm">NO VALUES DEFINED</div>';
                 return;
@@ -1863,7 +1864,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.editAboutValue = (id) => {
         const val = aboutValuesMap[id];
         if (!val) return;
-        
+
         document.getElementById('editingValueId').value = val.id;
         document.getElementById('valueTitle').value = val.title;
         document.getElementById('valueDescription').value = val.description || '';
@@ -1893,11 +1894,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const saveBtn = document.getElementById('saveValueBtn');
             const status = document.getElementById('valueStatusMsg');
             const id = document.getElementById('editingValueId').value;
-            
+
             try {
                 saveBtn.disabled = true;
                 status.innerText = 'SAVING...';
-                
+
                 const valData = {
                     title: document.getElementById('valueTitle').value.trim(),
                     description: document.getElementById('valueDescription').value.trim(),
@@ -1950,9 +1951,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     fetchEnquiries();
     fetchPackages();
     fetchAlbums();
-    fetchTestimonials();
-    fetchAboutProfile();
-    fetchAboutValues();
 
     // Handle hash on load (optional direct linking to views)
     if (window.location.hash) {
@@ -1980,7 +1978,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const querySnapshot = await getDocs(q);
             const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
+
             logBackend('Fetch Enquiries', 'SUCCESS', `Loaded ${data.length} messages (Filter: ${activeEnquiryFilter})`);
 
             // Update Stats - Count UNREAD Specifically
@@ -1989,7 +1987,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const unreadCount = unreadSnapshot.data().count;
 
             const eStat = document.getElementById('statPendingInquiries');
-            if(eStat) {
+            if (eStat) {
                 logBackend('Fetch Unread Count', 'SUCCESS', `Current unread: ${unreadCount}`);
                 eStat.innerHTML = `${unreadCount} ${unreadCount > 0 ? '<span class="badge badge-error ml-2">URGENT</span>' : ''}`;
             }
@@ -2048,7 +2046,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         list.innerHTML = recent.map(enq => {
             const date = enq.created_at ? (enq.created_at.toDate ? enq.created_at.toDate() : new Date(enq.created_at)) : new Date();
             const timeStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-            
+
             return `
                 <tr>
                     <td>
@@ -2074,7 +2072,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await updateDoc(doc(db, "enquiries", id), { status: 'READ' });
                 logBackend('Mark Enquiry Read', 'SUCCESS', 'Status updated in DB');
                 enq.status = 'READ';
-                renderEnquiryList(); 
+                renderEnquiryList();
             } catch (error) {
                 logBackend('Mark Enquiry Read', 'ERROR', 'Could not update status', error);
             }
@@ -2090,7 +2088,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!details) return;
 
         const date = enq.created_at ? (enq.created_at.toDate ? enq.created_at.toDate() : new Date(enq.created_at)) : new Date();
-        const timeStr = date.toLocaleString('en-IN', { 
+        const timeStr = date.toLocaleString('en-IN', {
             day: '2-digit', month: 'long', year: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
@@ -2167,7 +2165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             logBackend('Update Enquiry Status', 'INFO', `Setting status to ${status} for: ${id}`);
             await updateDoc(doc(db, "enquiries", id), { status });
             logBackend('Update Enquiry Status', 'SUCCESS', `Status updated to ${status}`);
-            
+
             // Re-fetch to update list and details view
             await fetchEnquiries();
             if (status === 'ARCHIVED') {
@@ -2192,7 +2190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             logBackend('Delete Enquiry', 'INFO', `Deleting enquiry record: ${id}`);
             await deleteDoc(doc(db, "enquiries", id));
             logBackend('Delete Enquiry', 'SUCCESS', 'Enquiry record removed');
-            
+
             await fetchEnquiries();
             document.getElementById('enquiryDetails').innerHTML = `
                 <div class="flex flex-col items-center justify-center h-full opacity-30 text-center">

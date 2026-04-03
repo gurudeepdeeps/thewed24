@@ -1,34 +1,11 @@
+import { getAlbums, getAlbumImages } from './firestore.js';
+
 /**
- * Album Gallery Integration with Supabase
+ * Album Gallery Integration with Firebase
  * Handles fetching public albums and individual photos.
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Initialize Supabase Client
-    let sbClient = window.supabaseClient;
-
-    if (!sbClient && window.supabase) {
-        const SUPABASE_URL = 'https://lmtjqneyfebhnzvgdwui.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtdGpxbmV5ZmViaG56dmdkd3VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNDkzNzEsImV4cCI6MjA4OTYyNTM3MX0._gemg7d30T3uFDXRJ2We9itBFncioGkQ93rQElqU2lM';
-        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-
-    /**
-     * Detailed backend logger
-     */
-    const logBackend = (operation, status, details, error = null) => {
-        const timestamp = new Date().toLocaleTimeString();
-        const styles = {
-            SUCCESS: 'background: #064e3b; color: #34d399; padding: 2px 5px; border-radius: 2px; font-weight: bold;',
-            ERROR: 'background: #450a0a; color: #f87171; padding: 2px 5px; border-radius: 2px; font-weight: bold;',
-            INFO: 'background: #1e3a8a; color: #60a5fa; padding: 2px 5px; border-radius: 2px; font-weight: bold;'
-        };
-        
-        console.group(`Backend: ${operation} - ${status} (${timestamp})`);
-        console.log(`%c${status}`, styles[status] || '', details);
-        if (error) console.error('Full Error Object:', error);
-        console.groupEnd();
-    };
 
     const albumGrid = document.getElementById('album-grid');
     const loadMoreBtn = document.getElementById('load-more-btn');
@@ -48,19 +25,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial fetch of public albums
     async function fetchPublicAlbums() {
         try {
-            const { data, error } = await sbClient
-                .from('albums')
-                .select('*')
-                .eq('access_level', 'PUBLIC')
-                .order('event_date', { ascending: false });
-
-            if (error) throw error;
-            logBackend('Fetch Public Albums', 'SUCCESS', `Loaded ${data.length} collections`);
+            const data = await getAlbums();
 
             albums = data;
             renderAlbums(data);
         } catch (err) {
-            logBackend('Fetch Public Albums', 'ERROR', 'Could not retrieve album list', err);
+            console.error('Fetch Public Albums ERROR', err);
             albumGrid.innerHTML = `<p class="col-span-full text-center opacity-50">FAILED TO LOAD COLLECTIONS</p>`;
         }
     }
@@ -82,9 +52,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const albumEl = document.createElement('div');
             albumEl.className = 'album-item fade-in';
+            const coverImage = album.cover_image_url ? `src="${album.cover_image_url}"` : '';
             albumEl.innerHTML = `
                 <div class="image-wrapper aspect-video bg-surface-container overflow-hidden relative group cursor-pointer" onclick="openAlbum('${album.id}')">
-                    <img src="${album.cover_image_url || 'https://via.placeholder.com/800x450?text=No+Cover'}" 
+                    <img ${coverImage} 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
                         <span class="material-icons text-white opacity-0 group-hover:opacity-100 transition-opacity text-4xl">collections</span>
@@ -111,14 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentAlbumTitle = album ? album.title : 'Album Gallery';
 
         try {
-            const { data, error } = await sbClient
-                .from('album_images')
-                .select('*')
-                .eq('album_id', albumId)
-                .order('order_index', { ascending: true });
-
-            if (error) throw error;
-            logBackend('Fetch Album Images', 'SUCCESS', `Loaded ${data.length} images for album: ${currentAlbumTitle}`);
+            const data = await getAlbumImages(albumId);
 
             if (data && data.length > 0) {
                 currentAlbumPhotos = data;
@@ -128,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert("This album has no images yet.");
             }
         } catch (err) {
-            logBackend('Fetch Album Images', 'ERROR', `Failed to open album: ${currentAlbumTitle}`, err);
+            console.error('Fetch Album Images ERROR', err);
         }
     };
 

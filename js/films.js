@@ -1,80 +1,64 @@
-let sbClient = window.supabaseClient;
+import { getFilms } from './firestore.js';
 
-if (!sbClient) {
-    console.error('Supabase client not found. Please ensure supabase-config.js is loaded.');
-}
-
-/**
- * Detailed backend logger
- */
-const logBackend = (operation, status, details, error = null) => {
-    const timestamp = new Date().toLocaleTimeString();
-    const styles = {
-        SUCCESS: 'background: #064e3b; color: #34d399; padding: 2px 5px; border-radius: 2px; font-weight: bold;',
-        ERROR: 'background: #450a0a; color: #f87171; padding: 2px 5px; border-radius: 2px; font-weight: bold;',
-        INFO: 'background: #1e3a8a; color: #60a5fa; padding: 2px 5px; border-radius: 2px; font-weight: bold;'
-    };
-    
-    console.group(`Backend: ${operation} - ${status} (${timestamp})`);
-    console.log(`%c${status}`, styles[status] || '', details);
-    if (error) console.error('Full Error Object:', error);
-    console.groupEnd();
-};
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const grid = document.getElementById('video-grid');
     const loadMoreBtn = document.getElementById('load-more-btn');
     const loader = document.getElementById('loader-container');
     
     let currentPage = 0;
     const FILMS_PER_PAGE = 6;
+    let allFilms = [];
     
     async function loadFilms(reset = false) {
-        if (!sbClient) return;
-        
         if (reset) {
             currentPage = 0;
             grid.innerHTML = '';
             if (loader) loader.classList.add('active');
+            
+            try {
+                // Fetch all films from Firebase via our helper
+                allFilms = await getFilms();
+                // Filter only PUBLISHED
+                allFilms = allFilms.filter(film => film.status === 'PUBLISHED');
+            } catch (e) {
+                console.error("Error loading films from Firebase", e);
+                if (loader) loader.classList.remove('active');
+                return;
+            }
         }
         
         try {
             if (reset && loadMoreBtn) {
-                // Initial load: button is hidden, loader is visible
                 loadMoreBtn.style.display = 'none';
             } else if (loadMoreBtn) {
                 loadMoreBtn.innerText = 'LOADING MORE...';
             }
             
-            const from = currentPage * FILMS_PER_PAGE;
-            const to = from + FILMS_PER_PAGE - 1;
-            
-            const { data: films, error } = await sbClient.from('films')
-                .select('*')
-                .eq('status', 'PUBLISHED')
-                .order('created_at', { ascending: false })
-                .range(from, to);
-                
-            if (error) throw error;
-            logBackend('Fetch Gallery Films', 'SUCCESS', `Loaded ${films.length} films for page ${currentPage}`);
-            
-            if (films.length === 0 && reset) {
+            if (allFilms.length === 0 && reset) {
                 grid.innerHTML = '<div class="col-span-full text-center opacity-50 text-xl font-serif">More films coming soon...</div>';
                 if(loadMoreBtn) loadMoreBtn.style.display = 'none';
                 if (loader) loader.classList.remove('active');
                 return;
             }
             
+            const from = currentPage * FILMS_PER_PAGE;
+            const to = from + FILMS_PER_PAGE;
+            const filmsToRender = allFilms.slice(from, to);
+            
             let html = '';
-            films.forEach(film => {
+            filmsToRender.forEach(film => {
+                // Extracted poster & video. We remove default fallbacks as requested.
+                const videoSrc = film.video_url ? `src="${film.video_url}"` : '';
+                const posterAttr = film.cover_image_url ? `poster="${film.cover_image_url}"` : '';
+                
                 html += `
                     <div class="video-item fade-in visible">
                         <div class="video-wrapper aspect-video bg-surface-container overflow-hidden relative">
-                            <video src="${film.video_url || ''}" controls class="w-full h-full object-cover" poster="${film.cover_image_url || 'assets/cinematic-frame.jpg'}" preload="metadata" playsinline onclick="if (event.offsetY < this.offsetHeight * 0.85) { event.preventDefault(); this.paused ? this.play() : this.pause(); }"></video>
+                            <video ${videoSrc} controls class="w-full h-full object-cover" ${posterAttr} preload="metadata" playsinline onclick="if (event.offsetY < this.offsetHeight * 0.85) { event.preventDefault(); this.paused ? this.play() : this.pause(); }"></video>
                         </div>
                         <div class="mt-8">
-                            <h3 class="text-2xl italic font-serif">${film.couple_name || film.title}</h3>
-                            <p class="text-xs tracking-widest uppercase text-primary opacity-60 mt-3">${film.category || 'FILM'}</p>
+                            <h3 class="text-2xl italic font-serif">${film.couple_name || film.title || ''}</h3>
+                            <p class="text-xs tracking-widest uppercase text-primary opacity-60 mt-3">${film.category || ''}</p>
                         </div>
                     </div>
                 `;
@@ -88,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Check if there are more
-            if (films.length < FILMS_PER_PAGE) {
+            if (to >= allFilms.length) {
                 if (loadMoreBtn) loadMoreBtn.style.display = 'none';
             } else {
                 if (loadMoreBtn) {
@@ -100,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage++;
             
         } catch(e) {
-            logBackend('Fetch Gallery Films', 'ERROR', `Failed to load films (Page: ${currentPage})`, e);
+            console.error('Fetch Gallery Films ERROR', e);
             if (loadMoreBtn) loadMoreBtn.innerText = 'ERROR LOADING';
             if (loader) loader.classList.remove('active');
         }

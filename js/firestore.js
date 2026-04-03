@@ -79,6 +79,20 @@ export async function getAboutProfile() {
 }
 
 /**
+ * Fetch about values
+ */
+export async function getAboutValues() {
+    try {
+        const q = query(collection(db, "about_values"), orderBy("display_order", "asc"));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error fetching about values:", error);
+        return [];
+    }
+}
+
+/**
  * Submit an inquiry
  */
 export async function submitInquiry(data) {
@@ -92,5 +106,33 @@ export async function submitInquiry(data) {
     } catch (error) {
         console.error("Error submitting inquiry:", error);
         return { success: false, error };
+    }
+}
+
+/**
+ * Fetch public albums
+ */
+export async function getAlbums() {
+    try {
+        const q = query(collection(db, "albums"), where("access_level", "==", "PUBLIC"), orderBy("event_date", "desc"));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error fetching albums:", error);
+        return [];
+    }
+}
+
+/**
+ * Fetch images for an album
+ */
+export async function getAlbumImages(albumId) {
+    try {
+        const q = query(collection(db, "album_images"), where("album_id", "==", albumId), orderBy("order_index", "asc"));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error fetching album images:", error);
+        return [];
     }
 }

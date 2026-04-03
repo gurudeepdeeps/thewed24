@@ -158,7 +158,6 @@
             <ul>
                 <li><a href="films.html">Films</a></li>
                 <li><a href="album.html">Albums</a></li>
-                <li><a href="packages.html">Packages</a></li>
                 <li><a href="about.html">About</a></li>
                 <li><a href="testimonials.html">Testimonials</a></li>
             </ul>
@@ -178,7 +177,6 @@
         </button>
         <a href="films.html">Films</a>
         <a href="album.html">Albums</a>
-        <a href="packages.html">Packages</a>
         <a href="about.html">About</a>
         <a href="testimonials.html">Testimonials</a>
         <a href="contact.html">Contact</a>
@@ -283,6 +281,38 @@
         </div>
     </section>
 
+
+    <div class="section-divider-gold fade-in"></div>
+
+    <!-- Albums section Preview -->
+    <section class="py-32 px-12 bg-black overflow-hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end gap-12 mb-24 fade-in">
+                <div>
+                    <span class="text-[10px] tracking-[0.5em] text-primary/60 uppercase block mb-4">Gallery Showcase</span>
+                    <h2 class="brand-headline text-6xl md:text-7xl">Physical <br> <span class="italic font-light">Narratives</span></h2>
+                </div>
+                <p class="max-w-md text-sm opacity-50 leading-relaxed font-light mb-2">
+                    A curated selection of our most cherished wedding narratives. Each collection is a testament to the silent, profound stories we've had the honor to document.
+                </p>
+            </div>
+
+            <div id="homeAlbumsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <!-- Albums will be injected here -->
+                <div class="col-span-full py-20 text-center opacity-30 uppercase tracking-[0.4em] text-[10px]">
+                    Curating Collections...
+                </div>
+            </div>
+
+            <div class="text-center mt-24 fade-in">
+                <a href="album.html" class="btn btn-outline px-16 py-6 inline-flex items-center gap-6 group">
+                    <span class="text-xs uppercase tracking-widest text-primary">Discover All Albums</span>
+                    <span class="material-icons text-lg text-primary transition-transform group-hover:translate-x-2">arrow_right_alt</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <div class="section-divider-gold fade-in"></div>
 
     <!-- Testimonial Section -->
@@ -303,21 +333,7 @@
         </div>
     </section>
 
-    <div class="section-divider-gold fade-in"></div>
 
-    <!-- Packages Section -->
-    <section id="packages" class="py-32 px-12 bg-surface">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-4xl md:text-6xl mb-24 font-serif italic text-center fade-in">Packages</h2>
-            <div id="packagesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 packages-row-mobile">
-                <!-- Dynamic Packages Will Load Here -->
-                <div class="col-span-full text-center opacity-30 uppercase tracking-widest text-[10px] py-24">
-                    Calculating Collections...</div>
-            </div>
-        </div>
-    </section>
-
-    <div class="section-divider-gold fade-in"></div>
 
     <!-- Footer -->
     <footer class="py-32 px-12 border-t border-white/5 bg-surface-lowest">
@@ -383,9 +399,6 @@
                         </li>
                         <li><a href="album.html" class="text-sm uppercase tracking-widest transition-colors">Albums</a>
                         </li>
-                        <li><a href="packages.html"
-                                class="text-sm uppercase tracking-widest transition-colors">Packages</a>
-                        </li>
                         <li><a href="about.html" class="text-sm uppercase tracking-widest transition-colors">About</a>
                         </li>
                         <li><a href="testimonials.html"
@@ -409,8 +422,8 @@
     <!-- Firebase & Handlers -->
     <script type="module" src="js/home-about-handler.js"></script>
     <script type="module" src="js/home-films-handler.js"></script>
+    <script type="module" src="js/home-albums-handler.js"></script>
     <script type="module" src="js/testimonials-handler.js"></script>
-    <script type="module" src="js/packages-handler.js"></script>
     <script src="js/animations.js?v=2"></script>
 
     <script>

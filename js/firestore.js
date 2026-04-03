@@ -46,10 +46,9 @@ export async function getFeaturedFilms() {
  */
 export async function getTestimonials() {
     try {
-        const q = query(collection(db, "testimonials"), where("is_visible", "==", true));
+        const q = query(collection(db, "testimonials"), where("status", "==", "PUBLISHED"));
         const querySnapshot = await getDocs(q);
         const testimonials = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        testimonials.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)); // asc
         return testimonials;
     } catch (error) {
         console.error("Error fetching testimonials:", error);
@@ -58,20 +57,30 @@ export async function getTestimonials() {
 }
 
 /**
- * Fetch packages
+ * Fetch featured testimonials for home
  */
-export async function getPackages() {
+export async function getFeaturedTestimonials() {
     try {
-        const q = query(collection(db, "packages"), where("is_visible", "==", true));
+        const q = query(
+            collection(db, "testimonials"), 
+            where("is_selected_home", "==", true),
+            where("status", "==", "PUBLISHED")
+        );
         const querySnapshot = await getDocs(q);
-        const packages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        packages.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)); // asc
-        return packages;
+        const testimonials = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Local sort to avoid composite index requirement
+        testimonials.sort((a, b) => {
+            const timeA = a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
+            const timeB = b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
+            return timeB - timeA; // desc
+        });
+        return testimonials.slice(0, 4);
     } catch (error) {
-        console.error("Error fetching packages:", error);
+        console.error("Error fetching featured testimonials:", error);
         return [];
     }
 }
+
 
 /**
  * Fetch about profile
@@ -121,6 +130,31 @@ export async function getAlbums() {
         return albums;
     } catch (error) {
         console.error("Error fetching albums:", error);
+        return [];
+    }
+}
+
+/**
+ * Fetch featured albums for home
+ */
+export async function getFeaturedAlbums() {
+    try {
+        const q = query(
+            collection(db, "albums"), 
+            where("is_selected_home", "==", true),
+            where("access_level", "==", "PUBLIC")
+        );
+        const querySnapshot = await getDocs(q);
+        const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Local sort
+        albums.sort((a, b) => {
+            const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || 0;
+            const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || 0;
+            return timeB - timeA; // desc
+        });
+        return albums.slice(0, 4);
+    } catch (error) {
+        console.error("Error fetching featured albums:", error);
         return [];
     }
 }

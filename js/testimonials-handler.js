@@ -1,5 +1,5 @@
 /* testimonials-handler.js - Firebase Implementation */
-import { getTestimonials, submitTestimonial } from './firestore.js';
+import { getTestimonials, submitTestimonial, getFeaturedTestimonials } from './firestore.js';
 
 /**
  * Detailed backend logger
@@ -20,56 +20,82 @@ const logBackend = (operation, status, details, error = null) => {
 
 async function initTestimonials() {
     const columns = document.querySelectorAll('.marquee-col');
-    if (!columns || columns.length === 0) return;
+    const homeContainer = document.getElementById('homeTestimonialsContainer');
 
-    try {
-        const testimonials = await getTestimonials();
-        logBackend('Fetch Testimonials', 'SUCCESS', `Loaded ${testimonials.length} reviews from Firestore`);
+    if (columns.length > 0) {
+        try {
+            const testimonials = await getTestimonials();
+            logBackend('Fetch Testimonials', 'SUCCESS', `Loaded ${testimonials.length} reviews for Marquee`);
 
-        if (!testimonials || testimonials.length === 0) {
-            columns[0].innerHTML = '<div class="testimonial-card-dribbble opacity-30 text-center uppercase tracking-widest text-[9px] py-12">No stories yet...</div>';
-            return;
+            if (!testimonials || testimonials.length === 0) {
+                columns[0].innerHTML = '<div class="testimonial-card-dribbble opacity-30 text-center uppercase tracking-widest text-[9px] py-12">No stories yet...</div>';
+                return;
+            }
+
+            // Clear columns
+            columns.forEach(col => col.innerHTML = '');
+
+            // Distribute testimonials across 3 columns
+            testimonials.forEach((item, index) => {
+                const colIndex = index % columns.length;
+                const card = `
+                    <div class="testimonial-card-dribbble">
+                        <div class="card-quote-icon">"</div>
+                        <div class="stars-preview text-primary text-[10px] mb-4">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>
+                        <p class="card-body-text italic font-serif">"${item.review_text}"</p>
+                        <div class="card-footer">
+                            <div class="author-avatar">
+                                <span class="material-icons">person</span>
+                            </div>
+                            <div class="author-info">
+                                <span class="author-name-bold uppercase tracking-widest">${item.client_name}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                columns[colIndex].innerHTML += card;
+            });
+
+            // Duplicate for infinite scroll effect
+            columns.forEach(col => {
+                const clones = col.innerHTML;
+                col.innerHTML += clones;
+            });
+
+        } catch (err) {
+            logBackend('Fetch Testimonials', 'ERROR', 'Could not load client stories', err);
         }
+    }
 
-        // Clear columns
-        columns.forEach(col => col.innerHTML = '');
+    if (homeContainer) {
+        try {
+            const featured = await getFeaturedTestimonials();
+            logBackend('Fetch Home Testimonials', 'SUCCESS', `Loaded ${featured.length} selected reviews for Home`);
 
-        // Distribute testimonials across 3 columns
-        testimonials.forEach((item, index) => {
-            const colIndex = index % columns.length;
-            const card = `
-                <div class="testimonial-card-dribbble">
+            if (featured.length === 0) {
+                homeContainer.innerHTML = '<div class="col-span-full py-12 text-center opacity-40 uppercase tracking-widest text-xs">No selected stories to display</div>';
+                return;
+            }
+
+            homeContainer.innerHTML = featured.map(item => `
+                <div class="testimonial-card-dribbble fade-in">
                     <div class="card-quote-icon">"</div>
-                    <p class="card-body-text italic font-serif">"${item.testimonial_text || item.review_text}"</p>
+                    <div class="stars-preview text-primary text-[10px] mb-4">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>
+                    <p class="card-body-text italic font-serif">"${item.review_text}"</p>
                     <div class="card-footer">
                         <div class="author-avatar">
                             <span class="material-icons">person</span>
                         </div>
                         <div class="author-info">
-                            <span class="author-name-bold uppercase tracking-widest">${item.couple_name || item.client_name}</span>
-                            <span class="author-title-sub uppercase tracking-tighter text-[9px] opacity-40">${item.location || 'Wedding Story'}</span>
+                            <span class="author-name-bold uppercase tracking-widest">${item.client_name}</span>
                         </div>
                     </div>
                 </div>
-            `;
-            columns[colIndex].innerHTML += card;
-        });
+            `).join('');
 
-        // Duplicate for infinite scroll effect (since it's a vertical marquee)
-        columns.forEach(col => {
-            if (col.children.length > 0) {
-                const clones = col.innerHTML;
-                col.innerHTML += clones;
-            }
-        });
-
-        if (typeof window.triggerGlobalAnimations === 'function') {
-            window.triggerGlobalAnimations();
+        } catch (err) {
+            logBackend('Fetch Home Testimonials', 'ERROR', 'Could not load home stories', err);
         }
-
-    } catch (err) {
-        logBackend('Fetch Testimonials', 'ERROR', 'Could not load client stories', err);
-        columns[0].innerHTML = '<div class="col-span-full py-20 text-center text-primary/60 uppercase tracking-widest text-xs">Unable to load stories</div>';
     }
 }
 
@@ -83,12 +109,9 @@ async function handleSubmission(e) {
     const ratingVal = parseInt(form.querySelector('input[name="rating"]:checked')?.value || '5');
     const data = {
         client_name: document.getElementById('userName').value,
-        couple_name: document.getElementById('userName').value,
         review_text: document.getElementById('userStory').value,
-        testimonial_text: document.getElementById('userStory').value,
         rating: ratingVal,
-        star_rating: ratingVal,
-        location: 'Wedding Story'
+        star_rating: ratingVal
     };
 
     try {

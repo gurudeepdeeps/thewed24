@@ -320,7 +320,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         <div class="film-info">
                             <div class="text-[10px] text-primary tracking-widest uppercase mb-1">ALBUM TITLE</div>
-                            <h3 class="font-medium text-lg">${album.title}</h3>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-medium text-lg">${album.title}</h3>
+                                ${album.is_selected_home ? '<span class="material-icons text-primary text-sm" title="Featured on Home Page">stars</span>' : ''}
+                            </div>
+                            ${album.is_selected_home ? '<div class="text-[8px] text-primary uppercase tracking-widest font-bold">Featured on Home</div>' : ''}
                         </div>
                         
                         <div class="film-couple">
@@ -395,202 +399,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listContainer.innerHTML = `<div class="text-error text-center py-8 tracking-widest uppercase text-sm">FAILED TO FETCH: ${err.message}</div>`;
             }
         }
-    }
-
-    // --- SUPABASE PACKAGES LOGIC ---
-    let currentPackagesFilter = 'ALL';
-    let editingPackageId = null;
-    window.packagesMap = {};
-
-    async function fetchPackages(reset = true) {
-        const listContainer = document.getElementById('packagesList');
-        if (!listContainer) return;
-
-        if (reset) {
-            window.packagesMap = {};
-            listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">LOADING PACKAGES...</div>';
-        }
-
-        try {
-            const q = query(collection(db, "packages"), orderBy("created_at", "desc"));
-            const querySnapshot = await getDocs(q);
-            const packages = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            logBackend('Fetch Packages', 'SUCCESS', `Loaded ${packages.length} packages from Firestore`);
-
-            if (packages.length === 0) {
-                listContainer.innerHTML = `<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO ${currentPackagesFilter} PACKAGES FOUND</div>`;
-                return;
-            }
-
-            let html = '';
-            packages.forEach(pkg => {
-                window.packagesMap[pkg.id] = pkg;
-                const formattedPrice = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pkg.price);
-
-                html += `
-                    <div class="film-card fade-in">
-                        <div class="drag-handle"><span class="material-icons opacity-30">inventory_2</span></div>
-                        <div class="film-info">
-                            <div class="text-[10px] text-primary tracking-widest uppercase mb-1">PACKAGE ${pkg.is_signature ? '• SIGNATURE' : ''}</div>
-                            <h3 class="font-medium text-lg">${pkg.name}</h3>
-                        </div>
-                        <div class="film-couple" style="flex: 2;">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-1">PRICE</div>
-                            <div class="text-lg font-serif text-primary">${formattedPrice}</div>
-                        </div>
-                        <div class="film-status w-32">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-2">STATUS</div>
-                            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[9px] font-bold tracking-widest border ${pkg.status === 'ACTIVE' ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-white/10 bg-white/5 text-white/40'}">
-                                <span class="w-1.5 h-1.5 rounded-full ${pkg.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-white/30'}"></span> 
-                                ${pkg.status}
-                            </div>
-                        </div>
-                        <div class="film-actions flex gap-4 ml-auto items-center">
-                            <button class="icon-btn-small" onclick="editPackage('${pkg.id}', event)" title="Edit package">
-                                <span class="material-icons text-sm opacity-50 hover:opacity-100 hover:text-primary transition-all">edit</span>
-                            </button>
-                            <button class="icon-btn-small" onclick="deletePackage('${pkg.id}', event)" title="Delete package">
-                                <span class="material-icons text-sm opacity-50 hover:opacity-100 hover:text-error transition-all">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            listContainer.innerHTML = html;
-
-        } catch (err) {
-            logBackend('Fetch Packages', 'ERROR', 'Could not retrieve packages list', err);
-            listContainer.innerHTML = `<div class="text-error text-center py-8 text-xs uppercase">ERROR: ${err.message}</div>`;
-        }
-    }
-
-    // Package Modal Logic
-    const addPackageModal = document.getElementById('addPackageModal');
-    const newPackageForm = document.getElementById('newPackageForm');
-    const pkgStatusMsg = document.getElementById('packageStatusMsg');
-
-    if (document.getElementById('addPackageBtn')) {
-        document.getElementById('addPackageBtn').addEventListener('click', () => {
-            editingPackageId = null;
-            document.getElementById('packageModalTitle').innerText = 'Add New Package';
-            document.getElementById('savePkgBtn').innerText = 'SAVE PACKAGE';
-            newPackageForm.reset();
-            addPackageModal.style.display = 'flex';
-            setTimeout(() => addPackageModal.classList.add('active'), 50);
-        });
-    }
-
-    if (document.getElementById('closePackageModalBtn')) {
-        document.getElementById('closePackageModalBtn').addEventListener('click', () => {
-            addPackageModal.classList.remove('active');
-        });
-    }
-
-    if (document.getElementById('cancelPkgBtn')) {
-        document.getElementById('cancelPkgBtn').addEventListener('click', () => {
-            addPackageModal.classList.remove('active');
-        });
-    }
-
-    window.editPackage = function (id, event) {
-        if (event) event.stopPropagation();
-        editingPackageId = id;
-        const pkg = window.packagesMap[id];
-
-        document.getElementById('packageModalTitle').innerText = 'Edit Package';
-        document.getElementById('savePkgBtn').innerText = 'UPDATE PACKAGE';
-
-        document.getElementById('pkgName').value = pkg.name;
-        document.getElementById('pkgStatus').value = pkg.status;
-        document.getElementById('pkgPrice').value = pkg.price;
-        document.getElementById('pkgWhatsAppLabel').value = pkg.whatsapp_label || '';
-        document.getElementById('pkgIsSignature').checked = pkg.is_signature || false;
-        document.getElementById('pkgFeatures').value = pkg.features_summary || '';
-
-        addPackageModal.style.display = 'flex';
-        setTimeout(() => addPackageModal.classList.add('active'), 50);
-    };
-
-    window.deletePackage = async function (id, event) {
-        if (event) event.stopPropagation();
-        if (!confirm('Permanently delete this package?')) return;
-
-        try {
-            await deleteDoc(doc(db, "packages", id));
-            logBackend('Delete Package', 'SUCCESS', `Package ${id} deleted`);
-            fetchPackages(true);
-        } catch (err) {
-            logBackend('Delete Package', 'ERROR', `Failed to delete package ${id}`, err);
-            alert('Delete failed: ' + err.message);
-        }
-    };
-
-    if (newPackageForm) {
-        newPackageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const saveBtn = document.getElementById('savePkgBtn');
-            const originalBtnText = saveBtn.innerText;
-
-            saveBtn.innerText = 'SAVING...';
-            saveBtn.disabled = true;
-            pkgStatusMsg.style.display = 'none';
-
-            const pkgData = {
-                name: document.getElementById('pkgName').value.trim(),
-                category: 'WEDDING',
-                status: document.getElementById('pkgStatus').value,
-                price: parseFloat(document.getElementById('pkgPrice').value || 0),
-                whatsapp_label: document.getElementById('pkgWhatsAppLabel').value.trim(),
-                is_signature: document.getElementById('pkgIsSignature').checked,
-                features_summary: document.getElementById('pkgFeatures').value.trim(),
-                updated_at: new Date().toISOString()
-            };
-
-            try {
-                if (editingPackageId) {
-                    logBackend('Update Package', 'INFO', `Updating package: ${editingPackageId}`, pkgData);
-                    await updateDoc(doc(db, "packages", editingPackageId), pkgData);
-                } else {
-                    pkgData.created_at = new Date().toISOString();
-                    logBackend('Insert Package', 'INFO', 'Inserting new package', pkgData);
-                    await addDoc(collection(db, "packages"), pkgData);
-                }
-
-                logBackend('Save Package', 'SUCCESS', editingPackageId ? `Updated package ${editingPackageId}` : 'Created new package');
-                pkgStatusMsg.innerText = editingPackageId ? 'PACKAGE UPDATED' : 'PACKAGE CREATED';
-                pkgStatusMsg.style.display = 'block';
-
-                setTimeout(() => {
-                    if (addPackageModal) {
-                        addPackageModal.classList.remove('active');
-                        addPackageModal.style.display = 'none';
-                    }
-                    fetchPackages(true);
-                }, 1000);
-
-            } catch (err) {
-                logBackend('Save Package', 'ERROR', 'Could not save package to Firestore', err);
-                pkgStatusMsg.innerText = 'SAVE ERROR: ' + err.message;
-                pkgStatusMsg.style.display = 'block';
-            } finally {
-                saveBtn.innerText = originalBtnText;
-                saveBtn.disabled = false;
-            }
-        });
-    }
-
-    const packagesFilterTabs = document.getElementById('packagesFilterTabs');
-    if (packagesFilterTabs) {
-        packagesFilterTabs.querySelectorAll('.tab-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                packagesFilterTabs.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                currentPackagesFilter = link.getAttribute('data-filter') || 'ALL';
-                fetchPackages(true);
-            });
-        });
     }
 
 
@@ -733,7 +541,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     function closeAddAlbumModal() {
         if (addAlbumModal) {
             addAlbumModal.classList.remove('active');
-            setTimeout(() => addAlbumModal.style.display = 'none', 300);
+            setTimeout(() => {
+                addAlbumModal.style.display = 'none';
+                if (newAlbumForm) newAlbumForm.reset();
+                const selectedCheckbox = document.getElementById('addAlbumSelected');
+                if (selectedCheckbox) selectedCheckbox.checked = false;
+                const statusMsg = document.getElementById('albumUploadStatusMsg');
+                if (statusMsg) {
+                    statusMsg.style.display = 'none';
+                    statusMsg.innerText = '';
+                }
+            }, 300);
         }
     }
     if (closeAlbumModalBtn) closeAlbumModalBtn.onclick = closeAddAlbumModal;
@@ -752,9 +570,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             const category = document.getElementById('addAlbumCategory').value;
             const event_date = document.getElementById('addAlbumDate').value;
             const access_level = document.getElementById('addAlbumAccess').value;
+            const isFeatured = document.getElementById('addAlbumSelected')?.checked || false;
             const coverFileInput = document.getElementById('addAlbumCover');
 
             try {
+                // Limit Check for featured albums
+                if (isFeatured) {
+                    const q = query(collection(db, "albums"), where("is_selected_home", "==", true));
+                    const snapshot = await getCountFromServer(q);
+                    let count = snapshot.data().count;
+
+                    // If editing, and it was already featured, count is effectively one less
+                    if (editingAlbumId && window.albumsMap[editingAlbumId].is_selected_home) {
+                        count--;
+                    }
+
+                    if (count >= 4) {
+                        throw new Error(`You can only feature a maximum of 4 albums on the home page. Please unfeature another album first.`);
+                    }
+                }
+
                 saveBtn.disabled = true;
                 saveBtn.innerText = 'SAVING...';
                 statusMsg.innerText = 'UPLOADING DATA...';
@@ -781,6 +616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     category,
                     event_date: event_date || null,
                     access_level,
+                    is_selected_home: isFeatured,
                     cover_image_url: coverUrl,
                     updated_at: new Date().toISOString()
                 };
@@ -1016,6 +852,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('addAlbumCategory').value = album.category || 'WEDDING';
         document.getElementById('addAlbumDate').value = album.event_date || '';
         document.getElementById('addAlbumAccess').value = album.access_level || 'PRIVATE';
+        
+        const selectedCheckbox = document.getElementById('addAlbumSelected');
+        if (selectedCheckbox) {
+            selectedCheckbox.checked = album.is_selected_home || false;
+        }
 
         const preview = document.getElementById('currentAlbumCoverPreview');
         if (album.cover_image_url) {
@@ -1136,14 +977,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     rating, 
                     star_rating: rating,
                     is_selected_home, 
-                    updated_at: new Date().toISOString() 
+                    updated_at: new Date() 
                 };
 
                 if (editingTestimonialId) {
                     logBackend('Update Testimonial', 'INFO', `Updating review ${editingTestimonialId}`, testiData);
                     await updateDoc(doc(db, "testimonials", editingTestimonialId), testiData);
                 } else {
-                    testiData.created_at = new Date().toISOString();
+                    testiData.created_at = new Date();
                     logBackend('Insert Testimonial', 'INFO', 'Inserting new review', testiData);
                     await addDoc(collection(db, "testimonials"), testiData);
                 }
@@ -1207,7 +1048,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.approveTestimonial = async function (id, event) {
         if (event) event.stopPropagation();
         try {
-            await updateDoc(doc(db, "testimonials", id), { status: 'PUBLISHED' });
+            await updateDoc(doc(db, "testimonials", id), { 
+                status: 'PUBLISHED',
+                updated_at: new Date()
+            });
             logBackend('Approve Testimonial', 'SUCCESS', `Published testimonial ${id}`);
             fetchTestimonials(true);
         } catch (err) {

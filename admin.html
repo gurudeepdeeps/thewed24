@@ -57,12 +57,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#packages" class="nav-link" data-target="packages">
-                        <span class="material-icons">inventory_2</span>
-                        <span>PACKAGES</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a href="#about" class="nav-link" data-target="about">
                         <span class="material-icons">person</span>
                         <span>ABOUT PAGE</span>
@@ -164,7 +158,6 @@
                                     <tr>
                                         <th>CLIENT</th>
                                         <th>EVENT DATE</th>
-                                        <th>PACKAGE</th>
                                         <th>STATUS</th>
                                     </tr>
                                 </thead>
@@ -602,6 +595,23 @@
                     <div id="currentAlbumCoverPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
                 </div>
 
+                <div class="form-group mb-6 mt-4">
+                    <label class="flex items-center gap-4 cursor-pointer group">
+                        <div class="relative">
+                            <input type="checkbox" id="addAlbumSelected" class="peer sr-only">
+                            <div
+                                class="w-10 h-5 bg-white/10 rounded-full peer peer-checked:bg-primary transition-all duration-300">
+                            </div>
+                            <div
+                                class="absolute top-1 left-1 w-3 h-3 bg-white rounded-full peer-checked:translate-x-5 transition-all duration-300">
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Feature
+                            in Selected Works on Home Page (Max 4)</span>
+                    </label>
+                </div>
+
                 <!-- ADDED: Bulk Image Upload Field -->
                 <div class="form-group">
                     <label class="form-label">Gallery Photos (Select Multiple) <span
@@ -682,59 +692,6 @@
         </div>
     </div>
 
-    <!-- Add Package Modal -->
-    <div id="addPackageModal" class="admin-modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <button class="modal-close" id="closePackageModalBtn"><span class="material-icons">close</span></button>
-            <h2 id="packageModalTitle" class="font-serif text-3xl mb-4">Add New Package</h2>
-            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
-
-            <form id="newPackageForm" class="text-left">
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="form-group col-span-2">
-                        <label class="form-label">Package Name *</label>
-                        <input type="text" id="pkgName" class="form-input" required placeholder="e.g. Silver, Platinum">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <select id="pkgStatus" class="form-input" style="appearance: none;">
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="INACTIVE">INACTIVE</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Price (INR) *</label>
-                        <input type="number" id="pkgPrice" class="form-input" required placeholder="40000">
-                    </div>
-                    <div class="form-group col-span-2">
-                        <label class="form-label">WhatsApp Label (optional)</label>
-                        <input type="text" id="pkgWhatsAppLabel" class="form-input" placeholder="Interested in Silver">
-                    </div>
-                    <div class="form-group col-span-2 flex items-center gap-3 py-2">
-                        <input type="checkbox" id="pkgIsSignature" class="w-4 h-4 accent-primary">
-                        <label class="form-label mb-0 cursor-pointer" for="pkgIsSignature">Mark as "Our Signature" /
-                            Highlight This Package</label>
-                    </div>
-                    <div class="form-group col-span-2">
-                        <label class="form-label">Features / Description (One per line)</label>
-                        <textarea id="pkgFeatures" class="form-input min-h-[150px]"
-                            placeholder="8 Hours Coverage&#10;Primary Cinematographer&#10;4K Master Narrative"></textarea>
-                        <p class="text-[9px] opacity-40 tracking-widest uppercase mt-2">THE FIRST FEW LINES WILL SHOW AS
-                            THE DESCRIPTION ON THE HOME PAGE.</p>
-                    </div>
-                </div>
-
-                <div id="packageStatusMsg" class="text-xs text-primary tracking-widest uppercase mt-4 mb-4 text-center"
-                    style="display: none;"></div>
-
-                <div class="flex gap-4 justify-end mt-4">
-                    <button type="button" class="btn btn-outline" id="cancelPkgBtn"
-                        style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
-                    <button type="submit" class="btn btn-primary" id="savePkgBtn">SAVE PACKAGE</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Manage Images Modal -->
     <div id="manageImagesModal" class="admin-modal">

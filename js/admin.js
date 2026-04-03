@@ -634,6 +634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 ${item.is_selected_home ? '<span class="material-icons text-[12px] text-primary" title="Featured on Home Page">stars</span>' : ''}
                             </div>
                             <h3 class="font-medium text-lg">${item.client_name}</h3>
+                            <div class="stars-display text-primary/60 text-[10px] mt-1 tracking-widest">${stars}</div>
                         </div>
                         <div class="film-couple" style="flex: 2.5;">
                             <div class="text-[10px] opacity-50 tracking-widest uppercase mb-1">REVIEW</div>
@@ -1120,13 +1121,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const review_text = document.getElementById('testiText').value.trim();
             const is_selected_home = document.getElementById('testiSelected').checked;
 
+            const rating = parseInt(document.getElementById('testiRating').value) || 5;
+
             try {
                 saveBtn.disabled = true;
                 saveBtn.innerText = 'SAVING...';
                 statusMsg.style.display = 'block';
                 statusMsg.innerText = 'SAVING TO DATABASE...';
 
-                const testiData = { client_name, status, review_text, is_selected_home, updated_at: new Date().toISOString() };
+                const testiData = { 
+                    client_name, 
+                    status, 
+                    review_text, 
+                    rating, 
+                    star_rating: rating,
+                    is_selected_home, 
+                    updated_at: new Date().toISOString() 
+                };
 
                 if (editingTestimonialId) {
                     logBackend('Update Testimonial', 'INFO', `Updating review ${editingTestimonialId}`, testiData);
@@ -1166,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.getElementById('testiClient').value = item.client_name;
         document.getElementById('testiStatus').value = item.status || 'PUBLISHED';
+        document.getElementById('testiRating').value = item.rating || 5;
         document.getElementById('testiText').value = item.review_text;
 
         const sel = document.getElementById('testiSelected');

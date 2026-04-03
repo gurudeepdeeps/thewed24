@@ -285,6 +285,37 @@
             box-shadow: 0 10px 30px rgba(var(--color-primary-rgb), 0.3);
             background: white;
         }
+
+        /* Star Rating */
+        .rating-wrapper {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .rating-wrapper input {
+            display: none;
+        }
+
+        .rating-wrapper label {
+            cursor: pointer;
+            font-size: 1.75rem;
+            color: rgba(255, 255, 255, 0.1);
+            transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1;
+        }
+
+        .rating-wrapper label:before {
+            content: '★';
+        }
+
+        .rating-wrapper input:checked~label,
+        .rating-wrapper label:hover,
+        .rating-wrapper label:hover~label {
+            color: var(--color-primary);
+        }
     </style>
 </head>
 
@@ -372,6 +403,17 @@
                 <div class="noir-field">
                     <label class="noir-label">Your Names</label>
                     <input type="text" id="userName" placeholder="e.g., Olivia & Thomas" class="noir-input" required>
+                </div>
+
+                <div class="noir-field">
+                    <label class="noir-label">Your Experience (1-5 Stars)</label>
+                    <div class="rating-wrapper">
+                        <input type="radio" name="rating" value="5" id="star5" checked><label for="star5" title="5 stars"></label>
+                        <input type="radio" name="rating" value="4" id="star4"><label for="star4" title="4 stars"></label>
+                        <input type="radio" name="rating" value="3" id="star3"><label for="star3" title="3 stars"></label>
+                        <input type="radio" name="rating" value="2" id="star2"><label for="star2" title="2 stars"></label>
+                        <input type="radio" name="rating" value="1" id="star1"><label for="star1" title="1 star"></label>
+                    </div>
                 </div>
 
                 <div class="noir-field">

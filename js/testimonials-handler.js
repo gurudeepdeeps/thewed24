@@ -80,13 +80,14 @@ async function handleSubmission(e) {
     const successMsg = document.getElementById('successMessage');
     const submitBtn = form.querySelector('button[type="submit"]');
 
+    const ratingVal = parseInt(form.querySelector('input[name="rating"]:checked')?.value || '5');
     const data = {
         client_name: document.getElementById('userName').value,
         couple_name: document.getElementById('userName').value,
         review_text: document.getElementById('userStory').value,
         testimonial_text: document.getElementById('userStory').value,
-        rating: 5,
-        star_rating: 5,
+        rating: ratingVal,
+        star_rating: ratingVal,
         location: 'Wedding Story'
     };
 

@@ -93,7 +93,7 @@ export async function getAboutProfile() {
  */
 export async function submitInquiry(data) {
     try {
-        await addDoc(collection(db, "inquiries"), {
+        await addDoc(collection(db, "enquiries"), {
             ...data,
             status: 'unread',
             created_at: new Date()

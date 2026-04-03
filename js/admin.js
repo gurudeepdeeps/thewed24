@@ -24,7 +24,13 @@ const logBackend = (operation, status, details, error = null) => {
 
     console.group(`Backend: ${operation} - ${status} (${timestamp})`);
     console.log(`%c${status}`, styles[status] || '', details);
-    if (error) console.error('Full Error Object:', error);
+    if (error) {
+        if (status === 'ERROR') {
+            console.error('Full Error Object:', error);
+        } else {
+            console.info('Metadata:', error);
+        }
+    }
     console.groupEnd();
 };
 
@@ -1451,7 +1457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // View Titles Mapping
     const viewTitles = {
-        'dashboard': 'SAGAR DODDAMANI | <span class="tracking-widest font-sans text-sm font-medium">ADMIN</span>',
+        'dashboard': 'KIRANA A N | <span class="tracking-widest font-sans text-sm font-medium">ADMIN</span>',
         'films': 'FILMS MANAGER',
         'albums': 'CLIENT ALBUMS MANAGER',
         'packages': 'PACKAGES MANAGER',
@@ -1984,12 +1990,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
 
                 <div class="mt-auto pt-8 border-t border-outline flex flex-wrap gap-4">
-                    <a href="mailto:${enq.email}?subject=Regarding your enquiry - Sagar Doddamani" class="reply-btn reply-btn-email flex-1 justify-center">
+                    <a href="mailto:${enq.email}?subject=Regarding your enquiry - The Wed 24" class="reply-btn reply-btn-email flex-1 justify-center">
                         <span class="material-icons">mail</span> SEND EMAIL
                     </a>
                     
                     ${enq.phone ? `
-                    <a href="https://wa.me/${enq.phone.replace(/[^0-9]/g, '')}?text=Hello ${encodeURIComponent(enq.client_name)}, this is Sagar Doddamani regarding your enquiry for ${encodeURIComponent(reasonsStr)}." 
+                    <a href="https://wa.me/${enq.phone.replace(/[^0-9]/g, '')}?text=Hello ${encodeURIComponent(enq.client_name)}, this is Kirana (The Wed 24) regarding your enquiry for ${encodeURIComponent(reasonsStr)}." 
                        target="_blank" 
                        class="reply-btn reply-btn-whatsapp flex-1 justify-center">
                         <span class="material-icons">chat</span> WHATSAPP CHAT

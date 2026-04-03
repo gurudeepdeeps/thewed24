@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | The Wed 24</title>
+    <link rel="icon" type="image/png" href="assets/the_wed_24_logo.png">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <link rel="stylesheet" href="css/components.css?v=2">
+    <link rel="stylesheet" href="css/animations.css?v=2">
+    <link rel="stylesheet" href="css/admin.css?v=2">
+
+    <style>
+        .login-body {
+            background-color: var(--color-background);
+            background-image: linear-gradient(to bottom right, #0A0A0A, #151515);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: rgba(26, 26, 26, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4rem;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.25em;
+            color: var(--color-primary);
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+
+        .form-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .btn-login {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 1rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+        }
+
+        #loginError {
+            display: none;
+            color: var(--color-error);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .login-body {
+                padding: 1.5rem;
+            }
+
+            .login-card {
+                padding: 2.5rem 1.25rem;
+                width: 92%;
+                max-width: 340px;
+                box-sizing: border-box;
+            }
+
+            .login-logo {
+                font-size: 1.15rem !important;
+                letter-spacing: 0.02rem !important;
+                white-space: normal;
+                word-wrap: break-word;
+                line-height: 1.2;
+                margin-bottom: 0.75rem !important;
+            }
+
+            .login-subtitle {
+                font-size: 0.55rem;
+                letter-spacing: 0.08rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="login-body text-white">
+
+    <div class="login-card fade-in">
+        <h1 class="login-logo">THE WED 24</h1>
+        <div class="login-subtitle">SECURE ADMIN LOGIN</div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" class="form-input" required autocomplete="email" placeholder="admin@domain.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-input" required autocomplete="current-password" placeholder="••••••••">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-login" id="loginSubmitBtn">AUTHENTICATE</button>
+            
+            <div id="loginError">Invalid credentials provided.</div>
+        </form>
+    </div>
+
+    <script type="module" src="js/login.js"></script>
+</body>
+</html>

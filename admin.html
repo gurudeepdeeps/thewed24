@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Sagar Doddamani</title>
+    <link rel="icon" type="image/png" href="assets/sagar_doddamani_logo.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <link rel="stylesheet" href="css/components.css?v=2">
+    <link rel="stylesheet" href="css/animations.css?v=2">
+    <link rel="stylesheet" href="css/admin.css?v=2">
+</head>
+
+<body class="admin-body">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header flex justify-between items-start" style="padding: 0 1.5rem 2rem;">
+            <a href="index.html" class="admin-logo">
+                SAGAR<br>
+                <span>DODDAMANI</span>
+            </a>
+            <button id="closeSidebarBtn" class="icon-btn hidden-desktop" style="margin-top: -0.5rem;"><span
+                    class="material-icons text-xl opacity-60">close</span></button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#dashboard" class="nav-link active" data-target="dashboard">
+                        <span class="material-icons">dashboard</span>
+                        <span>DASHBOARD</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#films" class="nav-link" data-target="films">
+                        <span class="material-icons">movie</span>
+                        <span>FILMS</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#albums" class="nav-link" data-target="albums">
+                        <span class="material-icons">photo_album</span>
+                        <span>ALBUMS</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#packages" class="nav-link" data-target="packages">
+                        <span class="material-icons">inventory_2</span>
+                        <span>PACKAGES</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#about" class="nav-link" data-target="about">
+                        <span class="material-icons">person</span>
+                        <span>ABOUT PAGE</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#testimonials" class="nav-link" data-target="testimonials">
+                        <span class="material-icons">star</span>
+                        <span>TESTIMONIALS</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#enquiries" class="nav-link" data-target="enquiries">
+                        <span class="material-icons">mail</span>
+                        <span>ENQUIRIES</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <ul class="nav-list">
+                <li class="nav-item mt-4">
+                    <a href="#" class="nav-link" id="signOutBtn">
+                        <span class="material-icons">logout</span>
+                        <span>SIGN OUT</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Topbar -->
+        <header class="admin-topbar">
+            <div class="topbar-left flex items-center gap-4">
+                <button id="mobileMenuBtn" class="icon-btn hidden-desktop"><span
+                        class="material-icons">menu</span></button>
+                <h2 class="topbar-title font-serif">SAGAR DODDAMANI | <span
+                        class="tracking-widest font-sans text-sm font-medium">ADMIN</span></h2>
+            </div>
+            <div class="topbar-right">
+                <div class="admin-profile">
+                    <div class="profile-info text-right">
+                        <div class="profile-name">SAGAR DODDAMANI</div>
+                        <div class="profile-role text-primary text-xs tracking-widest uppercase">CREATIVE DIRECTOR</div>
+                    </div>
+                    <span class="material-icons profile-avatar"
+                        style="font-size: 2.5rem; color: var(--color-primary);">account_circle</span>
+                    <a href="#" id="topbarLogoutBtn"
+                        class="logout-link text-xs tracking-widest uppercase ml-4 opacity-50 hover:opacity-100 transition-medium">LOGOUT</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- View Container -->
+        <div class="view-container">
+
+            <!-- Dashboard Overview View -->
+            <section id="view-dashboard" class="admin-view active fade-in">
+                <div class="view-header">
+                    <h1 class="view-title">Dashboard Overview</h1>
+                    <div class="section-divider-gold mt-4 mb-12 ml-0 w-32 content-start text-left"
+                        style="margin-left: 0; width: 60px;"></div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid mb-16">
+                    <div class="stat-card">
+                        <div class="stat-label">TOTAL FILMS</div>
+                        <div id="statTotalFilms" class="stat-value">-- <span
+                                class="material-icons text-primary text-sm">trending_up</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">CLIENT ALBUMS</div>
+                        <div id="statTotalAlbums" class="stat-value">-- <span
+                                class="material-icons text-primary text-sm">photo_library</span></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">PENDING INQUIRIES</div>
+                        <div id="statPendingInquiries" class="stat-value">-- <span
+                                class="badge badge-error ml-2">URGENT</span></div>
+                    </div>
+                </div>
+
+                <!-- Split Content -->
+                <div class="dashboard-split grid md:grid-cols-12 gap-12">
+                    <div class="md:col-span-12">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-serif text-2xl">Recent Inquiries</h3>
+                            <a href="#" data-target="enquiries"
+                                class="text-primary text-xs tracking-widest uppercase hover:underline">VIEW ALL
+                                LEADS</a>
+                        </div>
+                        <div class="table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>CLIENT</th>
+                                        <th>EVENT DATE</th>
+                                        <th>PACKAGE</th>
+                                        <th>STATUS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboardEnquiriesList">
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="py-16 text-center">
+                                                <div
+                                                    class="inline-block animate-spin border-t-2 border-primary rounded-full w-4 h-4 mb-3">
+                                                </div>
+                                                <div class="opacity-40 uppercase text-[9px] tracking-[0.4em]">Loading
+                                                    Recent Inquiries...</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Films Manager View -->
+            <section id="view-films" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="view-title">The Cinematic Frame</h1>
+                        <nav class="admin-tabs" id="filmsFilterTabs">
+                            <a href="#" class="tab-link active" data-filter="ALL">ALL FILMS</a>
+                            <a href="#" class="tab-link" data-filter="DRAFT">DRAFTS</a>
+                        </nav>
+                    </div>
+                    <button class="btn btn-primary flex items-center gap-2" id="uploadFilmBtn"
+                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
+                            class="material-icons text-sm">add</span> UPLOAD NEW FILM</button>
+                </div>
+
+                <!-- Table actions -->
+                <div class="table-actions flex justify-between items-center mb-6 px-4">
+                    <div class="flex gap-6 items-center">
+                        <button id="deleteSelectedBtn" class="btn btn-outline flex items-center gap-2"
+                            style="display: none; border-color: var(--color-error); color: var(--color-error); padding: 0.5rem 1.5rem; background: transparent;">
+                            <span class="material-icons text-sm">delete</span>
+                            <span>DELETE SELECTED (<span id="selectedCount">0</span>)</span>
+                        </button>
+                    </div>
+                    <div class="text-xs tracking-widest uppercase opacity-40">
+                        SHOWING DB FILMS
+                    </div>
+                </div>
+
+                <div class="film-list flex flex-col gap-4" id="filmsList">
+                    <!-- Dynamic Supabase Content Will Load Here -->
+                </div>
+                <!-- Load More -->
+                <div class="flex justify-center mt-12">
+                    <button id="loadMoreFilmsBtn" class="btn btn-outline"
+                        style="border: 1px solid var(--color-outline); background: transparent; padding-left: 3rem; padding-right: 3rem;">LOAD
+                        MORE FILMS</button>
+                </div>
+            </section>
+
+            <!-- Other Views placeholders -->
+            <!-- Albums Manager View -->
+            <section id="view-albums" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="view-title">Client Albums</h1>
+                        <nav class="admin-tabs" id="albumsFilterTabs">
+                            <a href="#" class="tab-link active" data-filter="ALL">ALL ALBUMS</a>
+                        </nav>
+                    </div>
+                    <button class="btn btn-primary flex items-center gap-2" id="createAlbumBtn"
+                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
+                            class="material-icons text-sm">add</span> CREATE NEW ALBUM</button>
+                </div>
+
+                <div class="table-actions flex justify-between items-center mb-6 px-4">
+                    <div class="flex gap-6 items-center">
+                        <button id="deleteSelectedAlbumsBtn" class="btn btn-outline flex items-center gap-2"
+                            style="display: none; border-color: var(--color-error); color: var(--color-error); padding: 0.5rem 1.5rem; background: transparent;">
+                            <span class="material-icons text-sm">delete</span>
+                            <span>DELETE SELECTED (<span id="selectedAlbumsCount">0</span>)</span>
+                        </button>
+                    </div>
+                    <div class="text-xs tracking-widest uppercase opacity-40">
+                        SHOWING DB ALBUMS
+                    </div>
+                </div>
+
+                <div class="film-list flex flex-col gap-4" id="albumsList">
+                    <!-- Dynamic Supabase Content Will Load Here -->
+                </div>
+                <!-- Load More -->
+                <div class="flex justify-center mt-12">
+                    <button id="loadMoreAlbumsBtn" class="btn btn-outline"
+                        style="border: 1px solid var(--color-outline); background: transparent; padding-left: 3rem; padding-right: 3rem;">LOAD
+                        MORE ALBUMS</button>
+                </div>
+            </section>
+
+            <section id="view-packages" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="view-title">Packages Manager</h1>
+                        <nav class="admin-tabs" id="packagesFilterTabs">
+                            <a href="#" class="tab-link active" data-filter="ALL">PACKAGES</a>
+                        </nav>
+                    </div>
+                    <button class="btn btn-primary flex items-center gap-2" id="addPackageBtn"
+                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
+                            class="material-icons text-sm">add</span> ADD NEW PACKAGE</button>
+                </div>
+
+                <div class="table-actions flex justify-between items-center mb-6 px-4">
+                    <div class="text-xs tracking-widest uppercase opacity-40">
+                        SHOWING DB PACKAGES
+                    </div>
+                </div>
+
+                <div class="film-list flex flex-col gap-4" id="packagesList">
+                    <!-- Dynamic Supabase Content Will Load Here -->
+                    <div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">LOADING BACKEND...</div>
+                </div>
+            </section>
+
+            <section id="view-about" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="view-title">About Page Manager</h1>
+                        <nav id="aboutTabs" class="admin-tabs">
+                            <a href="#" class="tab-link active" data-target="about-profile">PROFILE & STORY</a>
+                            <a href="#" class="tab-link" data-target="about-values">CORE VALUES</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Sub-section: Profile -->
+                <div id="about-profile-section" class="tab-content-about">
+                    <div
+                        class="glass-card p-10 max-w-4xl mx-auto rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                        <form id="aboutProfileForm" class="space-y-8">
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="form-group">
+                                    <label
+                                        class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">First
+                                        Name</label>
+                                    <input type="text" id="aboutName"
+                                        class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all"
+                                        value="Sagar">
+                                </div>
+                                <div class="form-group">
+                                    <label
+                                        class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">Surname</label>
+                                    <input type="text" id="aboutSubName"
+                                        class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all"
+                                        value="Doddamani">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label
+                                    class="form-label text-xs tracking-widest uppercase opacity-60 mb-4 block">Founder
+                                    Portrait Image</label>
+                                <div class="flex items-center gap-8 bg-white/5 border border-white/5 p-6 rounded-lg">
+                                    <div id="aboutPortraitPreviewContainer"
+                                        class="w-32 aspect-[4/5] rounded-sm border border-white/10 overflow-hidden bg-black/40 flex-shrink-0 box-shadow-premium">
+                                        <img id="aboutPortraitPreview" src="assets/sagar_portrait.png"
+                                            class="w-full h-full object-cover opacity-80" alt="Preview">
+                                    </div>
+                                    <div class="flex-grow space-y-3">
+                                        <input type="file" id="aboutPortraitFile" class="form-input block w-full text-sm text-white/60
+                                            file:mr-4 file:py-2 file:px-4
+                                            file:rounded-full file:border-0
+                                            file:text-xs file:font-semibold
+                                            file:bg-primary/20 file:text-primary
+                                            hover:file:bg-primary/30 outline-none cursor-pointer" accept="image/*">
+                                        <input type="hidden" id="aboutPortraitUrl">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-icons text-[14px] opacity-40">aspect_ratio</span>
+                                            <p class="text-[10px] opacity-40 italic">Recommended Ratio: <strong
+                                                    class="text-primary/80">4:5 (Vertical)</strong>. This matches your
+                                                website's portrait layout.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">The
+                                    Founder's Story / Bio</label>
+                                <textarea id="aboutBio"
+                                    class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all h-32"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="form-group">
+                                    <label
+                                        class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">Stat
+                                        1 (e.g. 10+)</label>
+                                    <input type="text" id="aboutStat1Val"
+                                        class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all">
+                                </div>
+                                <div class="form-group">
+                                    <label
+                                        class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">Stat
+                                        1 Label (e.g. Years)</label>
+                                    <input type="text" id="aboutStat1Label"
+                                        class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-8">
+                                <div class="form-group">
+                                    <label
+                                        class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">Stat
+                                        2 (e.g. 500+)</label>
+                                    <input type="text" id="aboutStat2Val"
+                                        class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all">
+                                </div>
+                                <div class="form-group">
+                                    <label
+                                        class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">Stat
+                                        2 Label (e.g. Projects)</label>
+                                    <input type="text" id="aboutStat2Label"
+                                        class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label
+                                    class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">Manifesto
+                                    Quote</label>
+                                <input type="text" id="aboutManifesto"
+                                    class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all"
+                                    placeholder='"Art is not what I see..."'>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-4">
+                                <div id="aboutProfileStatus" class="status-msg text-xs tracking-widest uppercase"></div>
+                                <button type="submit" id="saveAboutProfileBtn"
+                                    class="btn btn-primary px-12 py-3 rounded-none tracking-[0.3em] font-medium text-xs">SAVE
+                                    CHANGES</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sub-section: Values -->
+                <div id="about-values-section" class="tab-content-about" style="display: none;">
+                    <button class="btn btn-primary flex items-center gap-2 mb-8" id="addAboutValueBtn"
+                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
+                            class="material-icons text-sm">add</span> ADD CORE VALUE</button>
+                    <div id="aboutValuesList" class="film-list flex flex-col gap-4">
+                        <!-- Dynamic Values Load Here -->
+                        <div class="opacity-50 text-center py-12 tracking-widest uppercase text-sm">LOADING VALUES...
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-testimonials" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="view-title">Testimonials Manager</h1>
+                        <nav id="testimonialsFilterTabs" class="admin-tabs">
+                            <a href="#" class="tab-link active" data-filter="PUBLISHED">PUBLISHED</a>
+                            <a href="#" class="tab-link" data-filter="PENDING REVIEW">PENDING REVIEW</a>
+                        </nav>
+                    </div>
+                    <button class="btn btn-primary flex items-center gap-2" id="addTestimonialBtn"
+                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
+                            class="material-icons text-sm">add</span> ADD TESTIMONIAL</button>
+                </div>
+
+                <div id="testimonialsList" class="film-list flex flex-col gap-4 mt-6">
+                    <!-- Dynamic Testimonials Load Here -->
+                    <div class="opacity-50 text-center py-12 tracking-widest uppercase text-sm">SELECT TAB TO LOAD...
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-enquiries" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <nav id="enquiriesFilterTabs" class="admin-tabs">
+                        <a href="#" class="tab-link active" data-filter="ALL">ALL MESSAGES</a>
+                        <a href="#" class="tab-link" data-filter="UNREAD">UNREAD</a>
+                        <a href="#" class="tab-link" data-filter="READ">READ</a>
+                        <a href="#" class="tab-link" data-filter="ARCHIVED">ARCHIVED</a>
+                    </nav>
+                </div>
+
+                <div class="dashboard-split inbox-container gap-0 border border-outline rounded-sm bg-surface overflow-hidden"
+                    id="enquiriesLayout">
+                    <!-- Inbox List -->
+                    <div class="enquiriesList-pane custom-scrollbar" id="enquiriesList">
+                        <!-- Dynamic Enquiries Load Here -->
+                        <div class="p-8 text-center opacity-40 uppercase text-[10px] tracking-widest">
+                            Loading Enquiries...
+                        </div>
+                    </div>
+
+                    <!-- Message Reading Pane -->
+                    <div class="enquiryDetails-pane relative" id="enquiryDetails">
+                        <div class="flex flex-col items-center justify-center h-full opacity-30 text-center">
+                            <span class="material-icons text-5xl mb-4">mail_outline</span>
+                            <p class="uppercase tracking-[0.3em] text-xs">Select an enquiry to read</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Generic Modal -->
+    <div id="actionModal" class="admin-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModalBtn"><span class="material-icons">close</span></button>
+            <h2 id="modalTitle" class="font-serif text-3xl mb-4">Action Requested</h2>
+            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+            <p id="modalMessage" class="opacity-80 mb-8 text-sm leading-relaxed">This action is not connected to a
+                backend yet.</p>
+            <div class="flex gap-4">
+                <button class="btn btn-outline" id="cancelModalBtn"
+                    style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
+                <button class="btn btn-primary" id="confirmModalBtn">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Film Modal -->
+    <div id="addFilmModal" class="admin-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" id="closeFilmModalBtn"><span class="material-icons">close</span></button>
+            <h2 id="filmModalTitle" class="font-serif text-3xl mb-4">Upload New Film</h2>
+            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+
+            <form id="newFilmForm" class="text-left">
+                <div class="form-group">
+                    <label class="form-label">Couple / Client Name *</label>
+                    <input type="text" id="addFilmCouple" class="form-input" required>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="addFilmCategory" class="form-input" style="appearance: none;">
+                            <option value="WEDDING FILM">WEDDING FILM</option>
+                            <option value="HIGHLIGHTS">HIGHLIGHTS</option>
+                            <option value="COMMERCIAL">COMMERCIAL</option>
+                            <option value="TEASER">TEASER</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="addFilmStatus" class="form-input" style="appearance: none;">
+                            <option value="PUBLISHED">PUBLISHED</option>
+                            <option value="DRAFT">DRAFT</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group mb-6">
+                    <label class="flex items-center gap-4 cursor-pointer group">
+                        <div class="relative">
+                            <input type="checkbox" id="addFilmSelected" class="peer sr-only">
+                            <div
+                                class="w-10 h-5 bg-white/10 rounded-full peer peer-checked:bg-primary transition-all duration-300">
+                            </div>
+                            <div
+                                class="absolute top-1 left-1 w-3 h-3 bg-white rounded-full peer-checked:translate-x-5 transition-all duration-300">
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Feature
+                            in Selected Works on Home Page (Max 4)</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cover Image <span id="currentCoverLabel"
+                            class="text-[9px] opacity-50 ml-2 hidden">(Keep empty to use existing)</span></label>
+                    <input type="file" id="addFilmCover" class="form-input" accept="image/*">
+                    <div id="currentCoverPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Upload Film / Video File <span id="currentVideoLabel"
+                            class="text-[9px] opacity-50 ml-2 hidden">(Keep empty to use existing)</span></label>
+                    <input type="file" id="addFilmVideo" class="form-input" accept="video/*">
+                    <div id="currentVideoPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
+                </div>
+
+                <div id="uploadStatusMsg" class="text-xs text-primary tracking-widest uppercase mt-2 mb-2 text-center"
+                    style="display: none;"></div>
+
+                <div class="flex gap-4 justify-end mt-4">
+                    <button type="button" class="btn btn-outline" id="cancelFilmBtn"
+                        style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
+                    <button type="submit" class="btn btn-primary" id="saveFilmBtn">UPLOAD FILM</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Album Modal -->
+    <div id="addAlbumModal" class="admin-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" id="closeAlbumModalBtn"><span class="material-icons">close</span></button>
+            <h2 id="albumModalTitle" class="font-serif text-3xl mb-4">Create New Album</h2>
+            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+
+            <form id="newAlbumForm" class="text-left">
+                <div class="form-group">
+                    <label class="form-label">Album Title *</label>
+                    <input type="text" id="addAlbumTitle" class="form-input" required
+                        placeholder="e.g. The Royal Heritage">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Client Name *</label>
+                        <input type="text" id="addAlbumClient" class="form-input" required
+                            placeholder="e.g. Priyanka & Rahul">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category *</label>
+                        <select id="addAlbumCategory" class="form-input" required style="appearance: none;">
+                            <option value="WEDDING">WEDDING</option>
+                            <option value="ENGAGEMENT">ENGAGEMENT</option>
+                            <option value="COMMERCIAL">COMMERCIAL</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Event Date</label>
+                        <input type="date" id="addAlbumDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Access Level</label>
+                        <select id="addAlbumAccess" class="form-input" style="appearance: none;">
+                            <option value="PUBLIC">PUBLIC</option>
+                            <option value="PRIVATE" selected>PRIVATE</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cover Image</label>
+                    <input type="file" id="addAlbumCover" class="form-input" accept="image/*">
+                    <div id="currentAlbumCoverPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
+                </div>
+
+                <!-- ADDED: Bulk Image Upload Field -->
+                <div class="form-group">
+                    <label class="form-label">Gallery Photos (Select Multiple) <span
+                            class="text-[9px] opacity-50 ml-2 italic">Optional - You can also add more
+                            later</span></label>
+                    <input type="file" id="addAlbumPhotosBulk" class="form-input" multiple accept="image/*">
+                </div>
+
+                <div id="albumUploadStatusMsg"
+                    class="text-xs text-primary tracking-widest uppercase mt-2 mb-2 text-center" style="display: none;">
+                </div>
+
+                <div class="flex gap-4 justify-end mt-4">
+                    <button type="button" class="btn btn-outline" id="cancelAlbumBtn"
+                        style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
+                    <button type="submit" class="btn btn-primary" id="saveAlbumBtn">CREATE ALBUM</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Testimonial Modal -->
+    <div id="addTestimonialModal" class="admin-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" id="closeTestimonialModalBtn"><span class="material-icons">close</span></button>
+            <h2 id="testimonialModalTitle" class="font-serif text-3xl mb-4">Add Testimonial</h2>
+            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+
+            <form id="newTestimonialForm" class="text-left">
+                <div class="form-group">
+                    <label class="form-label">Client Name *</label>
+                    <input type="text" id="testiClient" class="form-input" required placeholder="e.g. Aditi & Rohan">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select id="testiStatus" class="form-input" style="appearance: none;">
+                        <option value="PUBLISHED">PUBLISHED</option>
+                        <option value="PENDING REVIEW">PENDING REVIEW</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Review Text *</label>
+                    <textarea id="testiText" class="form-input min-h-[150px]" required
+                        placeholder="Write the testimonial here..."></textarea>
+                </div>
+
+                <div class="form-group mb-6 mt-4">
+                    <label class="flex items-center gap-4 cursor-pointer group">
+                        <div class="relative">
+                            <input type="checkbox" id="testiSelected" class="peer sr-only">
+                            <div
+                                class="w-10 h-5 bg-white/10 rounded-full peer peer-checked:bg-primary transition-all duration-300">
+                            </div>
+                            <div
+                                class="absolute top-1 left-1 w-3 h-3 bg-white rounded-full peer-checked:translate-x-5 transition-all duration-300">
+                            </div>
+                        </div>
+                        <span
+                            class="text-xs uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Feature
+                            on Home Page Testimonials Section</span>
+                    </label>
+                </div>
+
+                <div id="testimonialStatusMsg"
+                    class="text-xs text-primary tracking-widest uppercase mt-2 mb-2 text-center" style="display: none;">
+                </div>
+
+                <div class="flex gap-4 justify-end mt-4">
+                    <button type="button" class="btn btn-outline" id="cancelTestiBtn"
+                        style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
+                    <button type="submit" class="btn btn-primary" id="saveTestiBtn">SAVE TESTIMONIAL</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Package Modal -->
+    <div id="addPackageModal" class="admin-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <button class="modal-close" id="closePackageModalBtn"><span class="material-icons">close</span></button>
+            <h2 id="packageModalTitle" class="font-serif text-3xl mb-4">Add New Package</h2>
+            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+
+            <form id="newPackageForm" class="text-left">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Package Name *</label>
+                        <input type="text" id="pkgName" class="form-input" required placeholder="e.g. Silver, Platinum">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="pkgStatus" class="form-input" style="appearance: none;">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Price (INR) *</label>
+                        <input type="number" id="pkgPrice" class="form-input" required placeholder="40000">
+                    </div>
+                    <div class="form-group col-span-2">
+                        <label class="form-label">WhatsApp Label (optional)</label>
+                        <input type="text" id="pkgWhatsAppLabel" class="form-input" placeholder="Interested in Silver">
+                    </div>
+                    <div class="form-group col-span-2 flex items-center gap-3 py-2">
+                        <input type="checkbox" id="pkgIsSignature" class="w-4 h-4 accent-primary">
+                        <label class="form-label mb-0 cursor-pointer" for="pkgIsSignature">Mark as "Our Signature" /
+                            Highlight This Package</label>
+                    </div>
+                    <div class="form-group col-span-2">
+                        <label class="form-label">Features / Description (One per line)</label>
+                        <textarea id="pkgFeatures" class="form-input min-h-[150px]"
+                            placeholder="8 Hours Coverage&#10;Primary Cinematographer&#10;4K Master Narrative"></textarea>
+                        <p class="text-[9px] opacity-40 tracking-widest uppercase mt-2">THE FIRST FEW LINES WILL SHOW AS
+                            THE DESCRIPTION ON THE HOME PAGE.</p>
+                    </div>
+                </div>
+
+                <div id="packageStatusMsg" class="text-xs text-primary tracking-widest uppercase mt-4 mb-4 text-center"
+                    style="display: none;"></div>
+
+                <div class="flex gap-4 justify-end mt-4">
+                    <button type="button" class="btn btn-outline" id="cancelPkgBtn"
+                        style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
+                    <button type="submit" class="btn btn-primary" id="savePkgBtn">SAVE PACKAGE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Images Modal -->
+    <div id="manageImagesModal" class="admin-modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <button class="modal-close" id="closeManageImagesBtn"><span class="material-icons">close</span></button>
+            <h2 class="font-serif text-3xl mb-2">Manage Album Images</h2>
+            <p id="manageImagesSubtitle" class="text-xs tracking-widest uppercase opacity-60 mb-4"></p>
+            <div class="section-divider-gold mt-2 mb-8 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+
+            <div class="mb-8 p-6 border border-outline border-dashed rounded-sm bg-surface-lowest">
+                <label class="form-label mb-4 block">Add New Photos</label>
+                <input type="file" id="uploadAlbumPhotos" class="form-input" multiple accept="image/*">
+                <div id="photosUploadStatus" class="text-xs text-primary tracking-widest uppercase mt-4 text-center"
+                    style="display: none;"></div>
+            </div>
+
+            <div id="albumImagesGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Dynamic Images Will Load Here -->
+            </div>
+
+            <div class="flex gap-4 justify-end mt-12 pt-8 border-t border-outline">
+                <button type="button" class="btn btn-primary" id="doneManageImagesBtn">DONE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Section Additions -->
+    <div id="aboutValueModal" class="admin-modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="modal-close" id="closeValueModalBtn"><span class="material-icons">close</span></button>
+            <h2 id="valueModalTitle" class="font-serif text-3xl mb-4">Add Core Value</h2>
+            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
+
+            <form id="aboutValueForm" class="text-left space-y-6">
+                <input type="hidden" id="editingValueId">
+                <div class="form-group">
+                    <label class="form-label">Title (e.g. Artistry)</label>
+                    <input type="text" id="valueTitle" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="valueDescription" class="form-input h-24" required></textarea>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="valueFeatured" class="w-4 h-4 accent-primary">
+                    <label class="form-label mb-0 cursor-pointer" for="valueFeatured">Core Focus (Highlight
+                        Card)</label>
+                </div>
+                <div class="pt-4">
+                    <div id="valueStatusMsg" class="status-msg mb-4 text-center"></div>
+                    <div class="flex gap-4">
+                        <button type="button" class="btn btn-outline flex-1" id="cancelValueBtn">CANCEL</button>
+                        <button type="submit" class="btn btn-primary flex-1" id="saveValueBtn">SAVE VALUE</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Script -->
+    <script type="module" src="js/admin.js"></script>
+
+
+    <!-- Admin Script -->
+
+</body>
+
+</html>

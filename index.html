@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Wed 24 | Wedding Cinematography | Bengaluru</title>
+    <meta name="description" content="Cinematic luxury wedding photography and videography by The Wed 24. Capturing silent narratives for the timeless romantic in Bengaluru and across India.">
+    <meta name="keywords" content="wedding photographer Bengaluru, wedding videographer Bengaluru, luxury wedding photography India, cinematic wedding films, The Wed 24">
+    <link rel="canonical" href="https://thewed24.com/index.html">
+    <link rel="icon" type="image/png" href="assets/the_wed_24_logo.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thewed24.com/">
+    <meta property="og:title" content="The Wed 24 | Wedding Cinematography | Bengaluru">
+    <meta property="og:description" content="Cinematic luxury wedding photography and videography by The Wed 24. Capturing silent narratives for the timeless romantic.">
+    <meta property="og:image" content="https://thewed24.com/assets/laptop-hero.JPG">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://thewed24.com/">
+    <meta property="twitter:title" content="The Wed 24 | Wedding Cinematography | Bengaluru">
+    <meta property="twitter:description" content="Cinematic luxury wedding photography and videography by The Wed 24. Capturing silent narratives for the timeless romantic.">
+    <meta property="twitter:image" content="https://thewed24.com/assets/laptop-hero.JPG">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "The Wed 24",
+      "image": "https://thewed24.com/assets/laptop-hero.JPG",
+      "@id": "https://thewed24.com",
+      "url": "https://thewed24.com",
+      "telephone": "+916363770057",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "",
+        "addressLocality": "Bengaluru",
+        "addressRegion": "Karnataka",
+        "postalCode": "",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 12.9716,
+        "longitude": 77.5946
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      "sameAs": [
+        "https://www.instagram.com/thewed24"
+      ]
+    }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Poppins:wght@200;300;400;500;600&family=Noto+Serif:ital,wght@0,300;0,400;0,700;1,300&family=Inter:wght@200;300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <link rel="stylesheet" href="css/components.css?v=2">
+    <link rel="stylesheet" href="css/animations.css?v=2">
+
+
+    <style>
+        /* Page-specific overrides or small tweaks */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-image {
+                position: absolute;
+                inset: 0;
+                opacity: 0.3;
+                z-index: 0;
+            }
+        }
+
+        .hero-content {
+            z-index: 10;
+            max-width: 800px;
+            padding: 0 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(3rem, 10vw, 8rem);
+            line-height: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .hero-content h1 span.italic {
+            display: inline-block;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header id="main-header">
+        <div class="logo brand-headline"><a href="index.html">THE WED 24</a></div>
+        <nav class="hidden-mobile">
+            <ul>
+                <li><a href="films.html">Films</a></li>
+                <li><a href="album.html">Albums</a></li>
+                <li><a href="packages.html">Packages</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="testimonials.html">Testimonials</a></li>
+            </ul>
+        </nav>
+        <div class="flex items-center gap-6">
+            <a href="contact.html" class="btn btn-outline hidden-mobile">Contact</a>
+            <button class="mobile-menu-btn" id="menu-open">
+                <span class="material-icons">menu</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Nav Overlay -->
+    <div class="mobile-nav-overlay" id="mobile-menu">
+        <button class="close-menu-btn" id="menu-close">
+            <span class="material-icons">close</span>
+        </button>
+        <a href="films.html">Films</a>
+        <a href="album.html">Albums</a>
+        <a href="packages.html">Packages</a>
+        <a href="about.html">About</a>
+        <a href="testimonials.html">Testimonials</a>
+        <a href="contact.html">Contact</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="absolute inset-0 z-0 h-full w-full">
+            <img src="assets/laptop-hero.JPG" alt="The Wed 24 | Luxury Cinematic Frame" class="hero-image hero-zoom">
+            <div class="absolute inset-0 bg-black/60"></div>
+        </div>
+
+        <div class="hero-content relative z-10" style="text-shadow: 0 2px 20px rgba(0,0,0,0.8);">
+            <h1 class="brand-headline stagger-in delay-1 text-white">The Silent <br> <span
+                    class="italic font-light">Narrative</span></h1>
+            <p class="brand-tagline tracking-vogue-lg uppercase text-xs stagger-in delay-2 opacity-100 mb-16 text-white/90">
+                Cinematography for the
+                timeless romantic</p>
+        </div>
+
+        <div class="hero-actions relative z-20">
+            <a href="contact.html" class="btn btn-primary px-16 py-5 text-sm tracking-widest stagger-in delay-3" style="background: var(--color-primary); color: #000; font-weight: 600; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">Book
+                Consultation</a>
+        </div>
+    </section>
+
+    <!-- Selected Works -->
+    <section class="py-32 px-12 max-w-7xl">
+        <div class="text-center mb-32">
+            <h2 class="text-6xl font-normal fade-in mb-4">Selected Works</h2>
+            <p class="text-[10px] tracking-vogue uppercase opacity-40 fade-in">Cinematic Film Folio</p>
+        </div>
+
+        <div id="homeSelectedWorksContainer" class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
+            <!-- Loading Indicator -->
+            <div class="col-span-full py-20 text-center opacity-40 uppercase tracking-widest text-xs animate-pulse">
+                Cinematic Portfolio Loading...
+            </div>
+        </div>
+
+        <!-- View All Films CTA -->
+        <div class="text-center mt-32 fade-in">
+            <a href="films.html" class="btn btn-outline px-16 py-5 inline-flex items-center gap-4 group">
+                View All Films
+                <span class="material-icons text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </a>
+        </div>
+    </section>
+
+    <div class="section-divider-gold fade-in"></div>
+
+    <section class="py-32 px-12 max-w-7xl mx-auto">
+        <!-- Profile 01: The Filmmaker -->
+        <div class="bio-item">
+            <div class="bio-image box-shadow-premium relative bg-surface-lowest">
+                <!-- Loading State -->
+                <div id="homeAboutImageLoader" class="absolute inset-0 flex items-center justify-center opacity-40 uppercase tracking-widest text-[10px] z-10 transition-opacity duration-500">
+                    Loading Image...
+                </div>
+                <img id="homeAboutImage" src="" alt="The Wed 24 | Team" class="w-full h-full object-cover relative z-20 opacity-0 transition-opacity duration-1000" onload="this.style.opacity='1'; document.getElementById('homeAboutImageLoader').style.opacity='0';">
+            </div>
+            
+            <div class="bio-content py-12">
+                <span class="text-primary text-[10px] uppercase tracking-[0.5em] mb-10 block font-medium">The Filmmaker</span>
+                <h2 class="brand-headline text-6xl lg:text-7xl mb-12 leading-[0.9]">
+                    <span id="homeAboutName">...</span> <br>
+                    <span id="homeAboutSubName" class="text-primary italic font-light opacity-90 text-5xl lg:text-6xl block">...</span>
+                </h2>
+
+                <div id="homeAboutBio" class="philosophy-text space-y-10 text-sm lg:text-base opacity-60 leading-relaxed font-light max-w-lg">
+                    <p>Loading narrative...</p>
+                </div>
+
+                <!-- Stats Pill Buttons -->
+                <div class="mt-16 flex flex-wrap gap-6 bio-stats-container">
+                    <div class="stat-btn">
+                        <span id="homeAboutStat1Val" class="stat-number">...</span>
+                        <span id="homeAboutStat1Label" class="stat-label">...</span>
+                    </div>
+                    <div class="stat-btn">
+                        <span id="homeAboutStat2Val" class="stat-number">...</span>
+                        <span id="homeAboutStat2Label" class="stat-label">...</span>
+                    </div>
+                </div>
+
+                <div class="mt-20">
+                    <a href="about.html" class="btn btn-outline px-16 py-6 inline-flex items-center gap-6 group">
+                        <span class="text-xs uppercase tracking-widest text-primary">Read Full Narrative</span>
+                        <span class="material-icons text-lg text-primary transition-transform group-hover:translate-x-2">arrow_right_alt</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider-gold fade-in"></div>
+
+    <!-- Testimonial Section -->
+    <section class="py-32 px-12 bg-surface-lowest">
+        <h2 class="text-5xl text-center mb-32 font-normal fade-in">Testimonials</h2>
+        <div id="homeTestimonialsContainer" class="grid grid-cols-2 gap-4 md:gap-12 max-w-7xl mx-auto">
+            <!-- Dynamic Testimonials will be injected here from Supabase -->
+            <div class="col-span-full py-12 text-center opacity-40 uppercase tracking-widest text-xs">Loading Testimonials...</div>
+        </div>
+
+        <!-- View All Testimonials CTA -->
+        <div class="text-center mt-20 fade-in">
+            <a href="testimonials.html" class="btn btn-outline px-16 py-5 inline-flex items-center gap-4 group">
+                View All Testimonials
+                <span class="material-icons text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </a>
+        </div>
+    </section>
+
+    <div class="section-divider-gold fade-in"></div>
+
+    <!-- Packages Section -->
+    <section id="packages" class="py-32 px-12 bg-surface">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl md:text-6xl mb-24 font-serif italic text-center fade-in">Packages</h2>
+            <div id="packagesContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 packages-row-mobile">
+                <!-- Dynamic Packages Will Load Here -->
+                <div class="col-span-full text-center opacity-30 uppercase tracking-widest text-[10px] py-24">Calculating Collections...</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider-gold fade-in"></div>
+
+    <!-- Footer -->
+    <footer class="py-32 px-12 border-t border-white/5 bg-surface-lowest">
+        <div class="max-w-7xl mx-auto">
+            <!-- Footer Main Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-20 lg:gap-32 mb-12 fade-in">
+                <!-- Branding Column -->
+                <div class="md:col-span-2">
+                    <div class="brand-headline italic text-4xl mb-8 tracking-wide text-primary">THE WED 24</div>
+                    <p class="text-[10px] leading-relaxed uppercase tracking-[0.2em] max-w-sm">
+                        My mission is to translate the raw energy of your most significant celebrations into a film that
+                        feels as timeless and poetic as your own narrative.
+                    </p>
+                </div>
+
+                <!-- Social & Connect Column -->
+                <div class="md:col-span-1 md:pl-12 lg:pl-16">
+                    <h5 class="text-sm uppercase tracking-[0.2em] text-primary mb-4 font-semibold">Social
+                        Media</h5>
+                    <div class="w-10 h-px bg-primary mb-6"></div>
+                    <div class="flex items-center gap-6">
+                        <!-- Instagram -->
+                        <a href="#" class="text-primary hover:opacity-80 transition-all">
+                            <svg class="w-6 h-6 fill-primary" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                        </a>
+                        <!-- YouTube -->
+                        <a href="#" class="text-primary hover:opacity-80 transition-all">
+                            <svg class="w-6 h-6 fill-primary" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                        </a>
+                        <!-- Facebook -->
+                        <a href="#" class="text-primary hover:opacity-80 transition-all">
+                            <svg class="w-6 h-6 fill-primary" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                        </a>
+                        <!-- WhatsApp -->
+                        <a href="https://wa.me/916363770057" target="_blank"
+                            class="text-primary hover:opacity-80 transition-all">
+                            <svg class="w-6 h-6 fill-primary" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.94 3.659 1.437 5.63 1.438h.004c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links Column -->
+                <div class="md:col-span-1 md:pl-12 lg:pl-20">
+                    <h5 class="text-sm uppercase tracking-[0.2em] text-primary mb-4 font-semibold">Quick
+                        Links</h5>
+                    <div class="w-10 h-px bg-primary mb-6"></div>
+                    <ul class="space-y-6">
+                        <li><a href="index.html" class="text-sm uppercase tracking-widest transition-colors">Home</a>
+                        </li>
+                        <li><a href="films.html" class="text-sm uppercase tracking-widest transition-colors">Films</a>
+                        </li>
+                        <li><a href="album.html" class="text-sm uppercase tracking-widest transition-colors">Albums</a>
+                        </li>
+                        <li><a href="packages.html"
+                                class="text-sm uppercase tracking-widest transition-colors">Packages</a>
+                        </li>
+                        <li><a href="about.html" class="text-sm uppercase tracking-widest transition-colors">About</a>
+                        </li>
+                        <li><a href="testimonials.html"
+                                class="text-sm uppercase tracking-widest transition-colors">Testimonials</a>
+                        </li>
+                        <li><a href="contact.html"
+                                class="text-sm uppercase tracking-widest transition-colors">Contact</a>
+                        </li>
+                        <li><a href="login.html"
+                                class="text-sm uppercase tracking-widest transition-colors">Admin Login</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <p class="pt-12 text-sm text-center font-light fade-in">
+                © 2026 The Wed 24. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Firebase & Handlers -->
+    <script type="module" src="js/home-about-handler.js"></script>
+    <script type="module" src="js/home-films-handler.js"></script>
+    <script type="module" src="js/testimonials-handler.js"></script>
+    <script type="module" src="js/packages-handler.js"></script>
+    <script src="js/animations.js?v=2"></script>
+
+    <script>
+        // Header scroll effect
+        window.onscroll = function () {
+            var header = document.getElementById('main-header');
+            if (window.pageYOffset > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        };
+    </script>
+</body>
+
+</html>

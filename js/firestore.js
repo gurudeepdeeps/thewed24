@@ -140,3 +140,19 @@ export async function getAlbumImages(albumId) {
         return [];
     }
 }
+/**
+ * Submit a testimonial
+ */
+export async function submitTestimonial(data) {
+    try {
+        await addDoc(collection(db, "testimonials"), {
+            ...data,
+            status: 'PENDING REVIEW',
+            created_at: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error submitting testimonial:", error);
+        return { success: false, error };
+    }
+}

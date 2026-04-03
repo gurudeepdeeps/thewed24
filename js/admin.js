@@ -593,7 +593,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- SUPABASE TESTIMONIALS LOGIC ---
+
+    // --- FIRESTORE TESTIMONIALS LOGIC ---
     async function fetchTestimonials(reset = true) {
         const listContainer = document.getElementById('testimonialsList');
         if (!listContainer) return;
@@ -1175,31 +1176,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 50);
         }
-        window.deleteTestimonial = async function (id, event) {
-            if (event) event.stopPropagation();
-            if (!confirm('Delete this testimonial permanently?')) return;
+    };
 
-            try {
-                await deleteDoc(doc(db, "testimonials", id));
-                logBackend('Delete Testimonial', 'SUCCESS', `Deleted testimonial ${id}`);
-                fetchTestimonials(true);
-            } catch (err) {
-                logBackend('Delete Testimonial', 'ERROR', `Failed to delete testimonial ${id}`, err);
-                alert('Delete failed: ' + err.message);
-            }
-        };
+    window.deleteTestimonial = async function (id, event) {
+        if (event) event.stopPropagation();
+        if (!confirm('Delete this testimonial permanently?')) return;
 
-        window.approveTestimonial = async function (id, event) {
-            if (event) event.stopPropagation();
-            try {
-                await updateDoc(doc(db, "testimonials", id), { status: 'PUBLISHED' });
-                logBackend('Approve Testimonial', 'SUCCESS', `Published testimonial ${id}`);
-                fetchTestimonials(true);
-            } catch (err) {
-                logBackend('Approve Testimonial', 'ERROR', `Failed to approve testimonial ${id}`, err);
-                alert('Approval failed: ' + err.message);
-            }
-        };
+        try {
+            await deleteDoc(doc(db, "testimonials", id));
+            logBackend('Delete Testimonial', 'SUCCESS', `Deleted testimonial ${id}`);
+            fetchTestimonials(true);
+        } catch (err) {
+            logBackend('Delete Testimonial', 'ERROR', `Failed to delete testimonial ${id}`, err);
+            alert('Delete failed: ' + err.message);
+        }
+    };
+
+    window.approveTestimonial = async function (id, event) {
+        if (event) event.stopPropagation();
+        try {
+            await updateDoc(doc(db, "testimonials", id), { status: 'PUBLISHED' });
+            logBackend('Approve Testimonial', 'SUCCESS', `Published testimonial ${id}`);
+            fetchTestimonials(true);
+        } catch (err) {
+            logBackend('Approve Testimonial', 'ERROR', `Failed to approve testimonial ${id}`, err);
+            alert('Approval failed: ' + err.message);
+        }
     };
 
     // Bulk Delete logic

@@ -1,5 +1,5 @@
 /* testimonials-handler.js - Firebase Implementation */
-import { getTestimonials } from './firestore.js';
+import { getTestimonials, submitTestimonial } from './firestore.js';
 
 /**
  * Detailed backend logger
@@ -19,36 +19,49 @@ const logBackend = (operation, status, details, error = null) => {
 };
 
 async function initTestimonials() {
-    const container = document.getElementById('testimonialsContainer');
-    if (!container) return;
+    const columns = document.querySelectorAll('.marquee-col');
+    if (!columns || columns.length === 0) return;
 
     try {
         const testimonials = await getTestimonials();
-        
         logBackend('Fetch Testimonials', 'SUCCESS', `Loaded ${testimonials.length} reviews from Firestore`);
 
         if (!testimonials || testimonials.length === 0) {
-            container.innerHTML = '<div class="col-span-full py-20 text-center opacity-40 uppercase tracking-widest text-xs">Testimonials are being processed...</div>';
+            columns[0].innerHTML = '<div class="testimonial-card-dribbble opacity-30 text-center uppercase tracking-widest text-[9px] py-12">No stories yet...</div>';
             return;
         }
 
-        let html = '';
-        testimonials.forEach(item => {
-            html += `
-                <div class="p-12 bg-surface border border-outline fade-in visible">
-                    <div class="flex gap-1 mb-8 text-primary">
-                        ${Array(item.star_rating || 5).fill('<svg class="w-4 h-4 fill-current"><use href="assets/icons/sprite.svg#star"></use></svg>').join('')}
-                    </div>
-                    <p class="text-xl mb-8 opacity-80 leading-relaxed italic font-serif">"${item.testimonial_text}"</p>
-                    <div>
-                        <p class="font-medium tracking-widest uppercase text-xs">${item.couple_name}</p>
-                        <p class="text-[10px] opacity-40 uppercase tracking-[0.2em] mt-2">${item.location}</p>
+        // Clear columns
+        columns.forEach(col => col.innerHTML = '');
+
+        // Distribute testimonials across 3 columns
+        testimonials.forEach((item, index) => {
+            const colIndex = index % columns.length;
+            const card = `
+                <div class="testimonial-card-dribbble">
+                    <div class="card-quote-icon">"</div>
+                    <p class="card-body-text italic font-serif">"${item.testimonial_text || item.review_text}"</p>
+                    <div class="card-footer">
+                        <div class="author-avatar">
+                            <span class="material-icons">person</span>
+                        </div>
+                        <div class="author-info">
+                            <span class="author-name-bold uppercase tracking-widest">${item.couple_name || item.client_name}</span>
+                            <span class="author-title-sub uppercase tracking-tighter text-[9px] opacity-40">${item.location || 'Wedding Story'}</span>
+                        </div>
                     </div>
                 </div>
             `;
+            columns[colIndex].innerHTML += card;
         });
 
-        container.innerHTML = html;
+        // Duplicate for infinite scroll effect (since it's a vertical marquee)
+        columns.forEach(col => {
+            if (col.children.length > 0) {
+                const clones = col.innerHTML;
+                col.innerHTML += clones;
+            }
+        });
 
         if (typeof window.triggerGlobalAnimations === 'function') {
             window.triggerGlobalAnimations();
@@ -56,8 +69,54 @@ async function initTestimonials() {
 
     } catch (err) {
         logBackend('Fetch Testimonials', 'ERROR', 'Could not load client stories', err);
-        container.innerHTML = '<div class="col-span-full py-20 text-center text-primary/60 uppercase tracking-widest text-xs">Unable to load stories</div>';
+        columns[0].innerHTML = '<div class="col-span-full py-20 text-center text-primary/60 uppercase tracking-widest text-xs">Unable to load stories</div>';
     }
 }
 
-document.addEventListener('DOMContentLoaded', initTestimonials);
+async function handleSubmission(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formContent = document.getElementById('formContent');
+    const successMsg = document.getElementById('successMessage');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    const data = {
+        client_name: document.getElementById('userName').value,
+        couple_name: document.getElementById('userName').value,
+        review_text: document.getElementById('userStory').value,
+        testimonial_text: document.getElementById('userStory').value,
+        rating: 5,
+        star_rating: 5,
+        location: 'Wedding Story'
+    };
+
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'SENDING...';
+        logBackend('Submit Testimonial', 'INFO', `Sending to Firestore content for ${data.client_name}`);
+
+        const result = await submitTestimonial(data);
+        if (result.success) {
+            logBackend('Submit Testimonial', 'SUCCESS', 'Review submitted for approval');
+            formContent.style.opacity = '0';
+            setTimeout(() => {
+                formContent.style.display = 'none';
+                successMsg.style.display = 'block';
+                successMsg.classList.add('fade-in');
+            }, 700);
+        } else {
+            throw result.error;
+        }
+    } catch (err) {
+        logBackend('Submit Testimonial', 'ERROR', 'Submission failed', err);
+        alert('Could not submit. Please try again: ' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit Perspective';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initTestimonials();
+    const form = document.getElementById('testimonialForm');
+    if (form) form.addEventListener('submit', handleSubmission);
+});

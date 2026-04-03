@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "the-wed-24"
+  },
   "targets": {},
   "etags": {}
 }

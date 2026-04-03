@@ -1516,7 +1516,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fetchPackages(true);
             } else if (targetId === 'about') {
                 fetchAboutProfile();
-                fetchAboutValues();
             } else if (targetId === 'enquiries') {
                 fetchEnquiries();
             }
@@ -1588,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         '#doneManageImagesBtn', '#closeManageImagesBtn',
         '#addTestimonialBtn', '#saveTestiBtn', '#cancelTestiBtn',
         '#addPackageBtn', '#savePkgBtn', '#cancelPkgBtn', '#closePackageModalBtn',
-        '#saveAboutProfileBtn', '#addAboutValueBtn', '#saveValueBtn', '#cancelValueBtn', '#closeValueModalBtn'
+        '#saveAboutProfileBtn'
     ];
     document.querySelectorAll(`button:not(.modal-close):not([onclick])${activeBtnIds.map(id => `:not(${id})`).join('')}`).forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -1782,128 +1781,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    let aboutValuesMap = {};
-    async function fetchAboutValues() {
-        const list = document.getElementById('aboutValuesList');
-        if (!list) return;
-
-        try {
-            const q = query(collection(db, "about_values"), orderBy("display_order", "asc"));
-            const querySnapshot = await getDocs(q);
-            const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            logBackend('Fetch About Values', 'SUCCESS', `Loaded ${data.length} core values`);
-            aboutValuesMap = {};
-
-            if (!data || data.length === 0) {
-                list.innerHTML = '<div class="opacity-50 text-center py-12 tracking-widest uppercase text-sm">NO VALUES DEFINED</div>';
-                return;
-            }
-
-            list.innerHTML = data.map(val => {
-                aboutValuesMap[val.id] = val;
-                return `
-                    <div class="film-card fade-in visible">
-                        <div class="film-info">
-                            <div class="text-[10px] text-primary tracking-widest uppercase mb-1">CORE VALUE</div>
-                            <h3 class="font-medium text-lg">${val.title} ${val.is_featured ? '<span class="text-xs text-primary opacity-60 ml-2">• FEATURED</span>' : ''}</h3>
-                            <p class="text-sm opacity-50 mt-1 line-clamp-1">${val.description}</p>
-                        </div>
-                        <div class="flex gap-4 ml-auto px-6">
-                            <button class="icon-btn-small" onclick="editAboutValue('${val.id}')" title="Edit"><span class="material-symbols-outlined">edit</span></button>
-                            <button class="icon-btn-small text-error" onclick="deleteAboutValue('${val.id}')" title="Delete"><span class="material-symbols-outlined">delete</span></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } catch (err) {
-            console.error('[About] Error fetching values:', err);
-            list.innerHTML = '<div class="text-error text-center py-8">FAILED TO LOAD VALUES</div>';
-        }
-    }
-
-    // Modal helpers for values
-    const valueModal = document.getElementById('aboutValueModal');
-    window.editAboutValue = (id) => {
-        const val = aboutValuesMap[id];
-        if (!val) return;
-
-        document.getElementById('editingValueId').value = val.id;
-        document.getElementById('valueTitle').value = val.title;
-        document.getElementById('valueDescription').value = val.description || '';
-        document.getElementById('valueFeatured').checked = val.is_featured || false;
-        document.getElementById('valueModalTitle').innerText = 'Edit Core Value';
-        valueModal.classList.add('active');
-    };
-
-    const addValBtn = document.getElementById('addAboutValueBtn');
-    if (addValBtn) {
-        addValBtn.onclick = () => {
-            document.getElementById('aboutValueForm').reset();
-            document.getElementById('editingValueId').value = '';
-            document.getElementById('valueModalTitle').innerText = 'Add Core Value';
-            valueModal.classList.add('active');
-        };
-    }
-
-    const closeValueModalBtn = document.getElementById('closeValueModalBtn');
-    const cancelValueBtn = document.getElementById('cancelValueBtn');
-    if (closeValueModalBtn) closeValueModalBtn.onclick = () => valueModal.classList.remove('active');
-    if (cancelValueBtn) cancelValueBtn.onclick = () => valueModal.classList.remove('active');
-
-    if (valueForm) {
-        valueForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const saveBtn = document.getElementById('saveValueBtn');
-            const status = document.getElementById('valueStatusMsg');
-            const id = document.getElementById('editingValueId').value;
-
-            try {
-                saveBtn.disabled = true;
-                status.innerText = 'SAVING...';
-
-                const valData = {
-                    title: document.getElementById('valueTitle').value.trim(),
-                    description: document.getElementById('valueDescription').value.trim(),
-                    is_featured: document.getElementById('valueFeatured').checked,
-                    updated_at: new Date().toISOString()
-                };
-
-                if (id) {
-                    logBackend('Update Value', 'INFO', `Updating core value: ${id}`, valData);
-                    await updateDoc(doc(db, "about_values", id), valData);
-                } else {
-                    valData.created_at = new Date().toISOString();
-                    valData.display_order = Date.now(); // Simple ordering
-                    logBackend('Insert Value', 'INFO', 'Adding new core value', valData);
-                    await addDoc(collection(db, "about_values"), valData);
-                }
-
-                logBackend('Save Value', 'SUCCESS', 'Core value saved successfully');
-                valueModal.classList.remove('active');
-                fetchAboutValues();
-            } catch (err) {
-                console.error('[About] Error saving value:', err);
-                status.style.color = 'var(--color-error)';
-                status.innerText = 'FAILED: ' + err.message;
-            } finally {
-                saveBtn.disabled = false;
-            }
-        };
-    }
-
-    window.deleteAboutValue = async (id) => {
-        if (!confirm('Are you sure you want to delete this core value?')) return;
-        try {
-            logBackend('Delete Value', 'INFO', `Removing core value: ${id}`);
-            await deleteDoc(doc(db, "about_values", id));
-            logBackend('Delete Value', 'SUCCESS', 'Core value deleted');
-            fetchAboutValues();
-        } catch (err) {
-            logBackend('Delete Value', 'ERROR', 'Could not delete core value', err);
-            alert('Delete failed: ' + err.message);
-        }
-    };
 
     // --- Enquiries variables (must be before fetch calls) ---
     let enquiries = [];

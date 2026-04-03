@@ -87,19 +87,6 @@ export async function getAboutProfile() {
     }
 }
 
-/**
- * Fetch about values
- */
-export async function getAboutValues() {
-    try {
-        const q = query(collection(db, "about_values"), orderBy("display_order", "asc"));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (error) {
-        console.error("Error fetching about values:", error);
-        return [];
-    }
-}
 
 /**
  * Submit an inquiry

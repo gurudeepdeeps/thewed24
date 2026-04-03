@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Sagar Doddamani</title>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <link rel="icon" type="image/png" href="assets/sagar_doddamani_logo.png">
 
     <!-- Fonts -->
@@ -296,7 +297,6 @@
                         <h1 class="view-title">About Page Manager</h1>
                         <nav id="aboutTabs" class="admin-tabs">
                             <a href="#" class="tab-link active" data-target="about-profile">PROFILE & STORY</a>
-                            <a href="#" class="tab-link" data-target="about-values">CORE VALUES</a>
                         </nav>
                     </div>
                 </div>
@@ -412,17 +412,6 @@
                     </div>
                 </div>
 
-                <!-- Sub-section: Values -->
-                <div id="about-values-section" class="tab-content-about" style="display: none;">
-                    <button class="btn btn-primary flex items-center gap-2 mb-8" id="addAboutValueBtn"
-                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
-                            class="material-icons text-sm">add</span> ADD CORE VALUE</button>
-                    <div id="aboutValuesList" class="film-list flex flex-col gap-4">
-                        <!-- Dynamic Values Load Here -->
-                        <div class="opacity-50 text-center py-12 tracking-widest uppercase text-sm">LOADING VALUES...
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <section id="view-testimonials" class="admin-view" style="display: none;">
@@ -768,38 +757,6 @@
         </div>
     </div>
 
-    <!-- Modal Section Additions -->
-    <div id="aboutValueModal" class="admin-modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <button class="modal-close" id="closeValueModalBtn"><span class="material-icons">close</span></button>
-            <h2 id="valueModalTitle" class="font-serif text-3xl mb-4">Add Core Value</h2>
-            <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
-
-            <form id="aboutValueForm" class="text-left space-y-6">
-                <input type="hidden" id="editingValueId">
-                <div class="form-group">
-                    <label class="form-label">Title (e.g. Artistry)</label>
-                    <input type="text" id="valueTitle" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea id="valueDescription" class="form-input h-24" required></textarea>
-                </div>
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" id="valueFeatured" class="w-4 h-4 accent-primary">
-                    <label class="form-label mb-0 cursor-pointer" for="valueFeatured">Core Focus (Highlight
-                        Card)</label>
-                </div>
-                <div class="pt-4">
-                    <div id="valueStatusMsg" class="status-msg mb-4 text-center"></div>
-                    <div class="flex gap-4">
-                        <button type="button" class="btn btn-outline flex-1" id="cancelValueBtn">CANCEL</button>
-                        <button type="submit" class="btn btn-primary flex-1" id="saveValueBtn">SAVE VALUE</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <!-- Admin Script -->
     <script type="module" src="js/admin.js"></script>

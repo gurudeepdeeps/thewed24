@@ -1,4 +1,4 @@
-import { getAboutProfile, getAboutValues } from './firestore.js';
+import { getAboutProfile } from './firestore.js';
 
 /**
  * about-handler.js - Public side logic for About page
@@ -34,21 +34,6 @@ async function initAbout() {
             }
         }
 
-        // 2. Fetch Values
-        const values = await getAboutValues();
-        
-        if (values && values.length > 0) {
-            const grid = document.getElementById('aboutValuesGrid');
-            if (grid) {
-                grid.innerHTML = values.map((val, index) => `
-                    <div class="collection-card fade-in ${val.is_featured ? 'featured' : ''}" style="animation-delay: ${index * 0.1}s">
-                        ${val.is_featured ? '<div class="featured-badge">Core Intent</div>' : ''}
-                        <h4>${val.title}</h4>
-                        <p class="description">${val.description}</p>
-                    </div>
-                `).join('');
-            }
-        }
     } catch (err) {
         console.error('About Content Initialization ERROR', err);
     }

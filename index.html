@@ -265,7 +265,7 @@
                 </div>
                 <img id="homeAboutImage" src="" alt="The Wed 24 | Team"
                     class="w-full h-full object-cover relative z-20 opacity-0 transition-opacity duration-1000"
-                    onload="this.style.opacity='1'; document.getElementById('homeAboutImageLoader').style.opacity='0';">
+                    onload="this.style.opacity='1'; const l=document.getElementById('homeAboutImageLoader'); if(l){l.style.display='none';}">
             </div>
 
             <div class="bio-content py-12">

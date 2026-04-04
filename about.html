@@ -201,7 +201,7 @@
                     <div id="aboutImageLoader" class="absolute inset-0 flex items-center justify-center opacity-40 uppercase tracking-widest text-[10px] z-10 transition-opacity duration-500">
                         Loading Image...
                     </div>
-                    <img id="aboutPortrait" src="" alt="Portrait" class="w-full h-full object-cover relative z-20 opacity-0 transition-opacity duration-1000" onload="this.style.opacity='1'; document.getElementById('aboutImageLoader').style.opacity='0';">
+                    <img id="aboutPortrait" src="" alt="Portrait" class="w-full h-full object-cover relative z-20 opacity-0 transition-opacity duration-1000" onload="this.style.opacity='1'; const l=document.getElementById('aboutImageLoader'); if(l){l.style.display='none';}">
                 </div>
                 <div class="bio-content text-center">
                     <span class="text-primary text-[10px] uppercase tracking-[0.5em] mb-8 block font-medium">The Filmmaker</span>

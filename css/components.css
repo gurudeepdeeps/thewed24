@@ -279,7 +279,8 @@ nav a:hover, nav a.active {
     padding: 0.8rem 2.5rem;
     display: inline-block;
     color: rgba(255, 255, 255, 0.85);
-    transition: all 0.4s ease;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .collection-card:hover h4 {

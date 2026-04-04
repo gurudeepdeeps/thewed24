@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Note: Since index.html doesn't have the full album-gallery.js lightbox logic,
             // we redirect the user to the album.html page.
-            albumEl.onclick = () => window.location.href = 'album.html';
+            albumEl.onclick = () => window.location.href = 'album';
 
             const coverImage = album.cover_image_url 
                 ? `<img src="${album.cover_image_url}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy">` 

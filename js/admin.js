@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     onAuthStateChanged(auth, (user) => {
         if (!user) {
             logBackend('Auth Check', 'INFO', 'No active session. Redirecting to login...');
-            window.location.replace('login.html');
+            window.location.replace('login');
             return;
         }
         logBackend('Auth Check', 'SUCCESS', `Session valid for: ${user.email}`);
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             logBackend('Sign Out', 'ERROR', 'Error during sign out', err);
         } finally {
-            window.location.href = 'login.html';
+            window.location.href = 'login';
         }
     }
 

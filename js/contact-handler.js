@@ -1,4 +1,4 @@
-/* contact-handler.js - Firebase Implementation */
+/* contact-handler.js - Web3Forms + Firebase Implementation */
 import { submitInquiry } from './firestore.js';
 
 /**
@@ -32,37 +32,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = true;
                 submitBtn.innerText = "SENDING...";
 
-                // Collect Form Data
-                const fullName = form.querySelector('input[placeholder="Enter your Name"]').value.trim();
-                const email = form.querySelector('input[type="email"]').value.trim();
-                const phone = form.querySelector('input[type="tel"]').value.trim();
-                const message = form.querySelector('textarea').value.trim();
-
-                // Collect Checkboxes (Reasons)
-                const reasonCheckboxes = form.querySelectorAll('input[name="reason"]:checked');
-                const reasons = Array.from(reasonCheckboxes).map(cb => cb.value);
-
+                const formData = new FormData(form);
+                const reasons = formData.getAll('reason');
+                
+                // Prepare object for Web3Forms (including reasons as a string)
+                const web3Data = Object.fromEntries(formData);
+                web3Data.reasons_list = reasons.join(', '); // Add explicit string for better email readability
+                
+                // Prepare data for Firestore (Admin Enquiries)
                 const inquiryData = {
-                    client_name: fullName,
-                    email: email,
-                    phone: phone,
-                    message: message,
+                    client_name: web3Data.name,
+                    email: web3Data.email,
+                    phone: web3Data.phone,
+                    message: web3Data.message,
                     package_interest: reasons.length > 0 ? reasons.join(', ').toUpperCase() : 'GENERAL',
-                    reasons: reasons
+                    reasons: reasons,
+                    category: 'INQUIRY',
+                    submitted_at: new Date().toISOString()
                 };
 
-                // Save to Firestore
-                logBackend('Submit Enquiry', 'INFO', `Submitting enquiry for ${fullName}`, inquiryData);
-                const result = await submitInquiry(inquiryData);
+                logBackend('Submit Enquiry', 'INFO', `Dual Submission: Firestore + Web3Forms`, { web3Data, inquiryData });
 
-                if (result.success) {
-                    logBackend('Submit Enquiry', 'SUCCESS', 'Enquiry recorded in Firestore');
+                // Perform both submissions in parallel for speed
+                const [web3Response, firestoreResult] = await Promise.all([
+                    fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(web3Data)
+                    }),
+                    submitInquiry(inquiryData)
+                ]);
+
+                const web3Result = await web3Response.json();
+
+                if (web3Response.status === 200 && firestoreResult.success) {
+                    logBackend('Submit Enquiry', 'SUCCESS', 'Dual recording completed successfully');
                     // Success State
                     form.style.display = 'none';
                     successMsg.style.display = 'block';
                     successMsg.classList.add('fade-in');
+                    form.reset();
                 } else {
-                    throw result.error;
+                    if (web3Response.status !== 200) throw new Error(web3Result.message || 'Web3Forms failed');
+                    if (!firestoreResult.success) throw firestoreResult.error;
                 }
 
             } catch (err) {

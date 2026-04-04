@@ -214,6 +214,19 @@ a {
     transition: var(--transition-medium);
 }
 
+.footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+    margin: -0.6rem;
+    border-radius: 50%;
+}
+
+.footer-social-link:hover {
+    background: rgba(212, 175, 55, 0.1);
+}
+
 ul {
     list-style: none;
 }

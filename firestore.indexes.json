@@ -23,6 +23,14 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "created_at", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "album_images",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "album_id", "order": "ASCENDING" },
+        { "fieldPath": "order_index", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

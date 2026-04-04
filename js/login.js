@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     logBackend('Sign In', 'SUCCESS', `User ${email} authenticated successfully via Firebase`);
                     loginSubmitBtn.innerText = 'ACCESS GRANTED';
                     setTimeout(() => {
-                        window.location.href = 'admin.html';
+                        window.location.href = 'admin';
                     }, 500);
                 } else {
                     logBackend('Sign In', 'ERROR', `Failed login attempt for ${email}`, result.error);
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkAuth((user) => {
         if (user) {
             logBackend('Session Check', 'SUCCESS', `Active Firebase session found for ${user.email}`);
-            window.location.href = 'admin.html';
+            window.location.href = 'admin';
         } else {
             logBackend('Session Check', 'INFO', 'No active Firebase session found');
         }

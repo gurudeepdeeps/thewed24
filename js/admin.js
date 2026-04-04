@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshot = await getCountFromServer(collection(db, "films"));
             const filmCount = snapshot.data().count;
             const fStat = document.getElementById('statTotalFilms');
-            if (fStat) fStat.innerHTML = `${filmCount} <span class="material-icons text-primary text-sm">trending_up</span>`;
+            if (fStat) fStat.innerHTML = `${filmCount}`;
 
             if (reset && films.length === 0) {
                 listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO FILMS IN DB. CLICK UPLOAD.</div>';
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshotCount = await getCountFromServer(collection(db, "albums"));
             const albumCount = snapshotCount.data().count;
             const aStat = document.getElementById('statTotalAlbums');
-            if (aStat) aStat.innerHTML = `${albumCount} <span class="material-icons text-primary text-sm">photo_library</span>`;
+            if (aStat) aStat.innerHTML = `${albumCount}`;
 
             if (reset && albums.length === 0) {
                 listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO ALBUMS IN DB. CLICK CREATE.</div>';
@@ -1557,6 +1557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+
     const profileForm = document.getElementById('aboutProfileForm');
     if (profileForm) {
         console.log('[About] Attaching submit listener to form...');
@@ -1651,19 +1652,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     let activeEnquiryFilter = 'ALL';
 
     // --- INITIAL FETCH CYCLE ---
-    fetchFilms();
-    fetchEnquiries();
-    fetchPackages();
-    fetchAlbums();
+    async function startApp() {
+        try {
+            await fetchFilms();
+        } catch (e) {
+            console.error('Initial Films Fetch Failed:', e);
+        }
 
-    // Handle hash on load (optional direct linking to views)
-    if (window.location.hash) {
-        const hashTarget = window.location.hash.substring(1);
-        const link = document.querySelector(`[data-target="${hashTarget}"]`);
-        if (link) {
-            link.click();
+        try {
+            await fetchEnquiries();
+        } catch (e) {
+            console.error('Initial Enquiries Fetch Failed:', e);
+        }
+
+
+        try {
+            await fetchAlbums();
+        } catch (e) {
+            console.error('Initial Albums Fetch Failed:', e);
+        }
+
+        // Handle hash on load (optional direct linking to views)
+        if (window.location.hash) {
+            const hashTarget = window.location.hash.substring(1);
+            const link = document.querySelector(`[data-target="${hashTarget}"]`);
+            if (link) {
+                link.click();
+            }
         }
     }
+
+    startApp();
 
     // --- Enquiries Manager Logic ---
 
@@ -1693,7 +1712,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const eStat = document.getElementById('statPendingInquiries');
             if (eStat) {
                 logBackend('Fetch Unread Count', 'SUCCESS', `Current unread: ${unreadCount}`);
-                eStat.innerHTML = `${unreadCount} ${unreadCount > 0 ? '<span class="badge badge-error ml-2">URGENT</span>' : ''}`;
+                eStat.innerHTML = `${unreadCount}`;
             }
 
             enquiries = data || [];

@@ -104,7 +104,7 @@ export async function submitInquiry(data) {
     try {
         await addDoc(collection(db, "enquiries"), {
             ...data,
-            status: 'unread',
+            status: 'UNREAD',
             created_at: new Date()
         });
         return { success: true };

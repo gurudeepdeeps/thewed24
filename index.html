@@ -83,6 +83,7 @@
     <link rel="stylesheet" href="css/main.css?v=2">
     <link rel="stylesheet" href="css/components.css?v=2">
     <link rel="stylesheet" href="css/animations.css?v=2">
+    <link rel="stylesheet" href="css/preloader.css?v=2">
 
 
     <style>
@@ -149,11 +150,27 @@
     </style>
 </head>
 
-<body>
+<body class="bg-black">
+
+    <!-- Premium Preloader -->
+    <div id="preloader">
+        <div class="preloader-content">
+            <div class="preloader-logo">
+                <img src="assets/the_wed_24_logo.png" alt="The Wed 24 Logo" style="height: 100px; width: auto; margin-bottom: 20px;">
+                <span class="preloader-italic brand-tagline uppercase text-[10px]" style="display: block;">Silently Narrating Love</span>
+            </div>
+            
+            <div class="preloader-bar-container">
+                <div class="preloader-bar"></div>
+            </div>
+            
+            <p class="preloader-status loading-pulse">Curating your cinematic experience...</p>
+        </div>
+    </div>
 
     <!-- Header -->
     <header id="main-header">
-        <div class="logo brand-headline"><a href="index.html">THE WED 24</a></div>
+        <div class="logo"><a href="index.html"><img src="assets/the_wed_24_logo.png" alt="The Wed 24 Logo" class="header-logo"></a></div>
         <nav class="hidden-mobile">
             <ul>
                 <li><a href="films.html">Films</a></li>
@@ -342,7 +359,9 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-20 lg:gap-32 mb-12 fade-in">
                 <!-- Branding Column -->
                 <div class="md:col-span-2">
-                    <div class="brand-headline italic text-4xl mb-8 tracking-wide text-primary">THE WED 24</div>
+                    <div class="mb-8">
+                        <img src="assets/the_wed_24_logo.png" alt="The Wed 24 Logo" style="height: 50px; width: auto;">
+                    </div>
                     <p class="text-[10px] leading-relaxed uppercase tracking-[0.2em] max-w-sm">
                         My mission is to translate the raw energy of your most significant celebrations into a film that
                         feels as timeless and poetic as your own narrative.
@@ -420,6 +439,7 @@
     </footer>
 
     <!-- Firebase & Handlers -->
+    <script type="module" src="js/preloader.js"></script>
     <script type="module" src="js/home-about-handler.js"></script>
     <script type="module" src="js/home-films-handler.js"></script>
     <script type="module" src="js/home-albums-handler.js"></script>

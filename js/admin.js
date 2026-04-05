@@ -4,7 +4,7 @@
 import { auth, db, storage } from './firebase.js';
 import {
     collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, limit, getDoc,
-    getCountFromServer
+    getCountFromServer, startAfter
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import {
     ref, uploadBytes, getDownloadURL, deleteObject
@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- SUPABASE FILMS INTEGRATION ---
     let currentFilmsPage = 0;
+    let lastVisibleFilmDoc = null;
     const FILMS_PER_PAGE = 6;
     let currentFilmsFilter = 'ALL';
     window.filmsMap = {};
@@ -88,48 +89,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (reset) {
             currentFilmsPage = 0;
+            lastVisibleFilmDoc = null;
             window.filmsMap = {};
-            listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">LOADING BACKEND...</div>';
+            listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">LOADING FILMS...</div>';
             if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        } else {
+            if (loadMoreBtn) loadMoreBtn.innerHTML = '<span class="animate-spin material-icons mr-2">refresh</span> LOADING...';
         }
 
         try {
+            // 1. Build Query (with conditional where and startAfter)
             let q;
+            const filmsRef = collection(db, "films");
+            
             if (currentFilmsFilter === 'DRAFT') {
-                q = query(collection(db, "films"), where("status", "==", "DRAFT"), orderBy("created_at", "desc"), limit(FILMS_PER_PAGE));
+                q = query(filmsRef, where("status", "==", "DRAFT"), orderBy("created_at", "desc"));
             } else {
-                q = query(collection(db, "films"), orderBy("created_at", "desc"), limit(FILMS_PER_PAGE));
+                q = query(filmsRef, orderBy("created_at", "desc"));
             }
 
-            // Simple pagination (for module, we'd use startAfter, but for this refactor we'll just fetch)
+            // Apply StartAfter for pagination
+            if (lastVisibleFilmDoc && !reset) {
+                q = query(q, startAfter(lastVisibleFilmDoc), limit(FILMS_PER_PAGE));
+            } else {
+                q = query(q, limit(FILMS_PER_PAGE));
+            }
+
+            // 2. Execute Query
             const querySnapshot = await getDocs(q);
             const films = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            logBackend('Fetch Films', 'SUCCESS', `Loaded ${films.length} films from Firestore (Filter: ${currentFilmsFilter})`);
+            // Update pagination cursor
+            if (querySnapshot.docs.length > 0) {
+                lastVisibleFilmDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+            }
 
-            // Update Stats
-            const snapshot = await getCountFromServer(collection(db, "films"));
-            const filmCount = snapshot.data().count;
+            logBackend('Fetch Films', 'SUCCESS', `Loaded ${films.length} films (Filter: ${currentFilmsFilter})`);
+
+            // 3. Get Total Count for filtered query
+            let countSnap;
+            if (currentFilmsFilter === 'DRAFT') {
+                countSnap = await getCountFromServer(query(filmsRef, where("status", "==", "DRAFT")));
+            } else {
+                countSnap = await getCountFromServer(filmsRef);
+            }
+            const totalCount = countSnap.data().count;
+            
+            // Update UI Stats
             const fStat = document.getElementById('statTotalFilms');
-            if (fStat) fStat.innerHTML = `${filmCount}`;
+            if (fStat) fStat.innerHTML = `${totalCount}`;
 
             if (reset && films.length === 0) {
-                listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO FILMS IN DB. CLICK UPLOAD.</div>';
+                listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">NO FILMS IN DB</div>';
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
                 return;
             }
 
+            // 4. Render HTML
             let html = '';
             films.forEach(film => {
                 window.filmsMap[film.id] = film;
-                const statusClass = film.status === 'PUBLISHED' ? 'success' : 'draft';
-                let dateStr = 'N/A';
-                const dateVal = film.created_at;
-                if (dateVal && dateVal.toDate) {
-                    const start = dateVal.toDate();
-                    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-                    dateStr = `${months[start.getMonth()]}<br>${String(start.getDate()).padStart(2, '0')},<br>${start.getFullYear()}`;
-                }
-
                 html += `
                     <div class="film-card fade-in">
                         <div class="drag-handle">
@@ -139,33 +158,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         <div class="film-info">
                             <div class="text-[10px] text-primary tracking-widest uppercase mb-1">FILM TITLE</div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="font-medium text-lg ${film.status === 'DRAFT' ? 'text-white/50' : ''}">${film.title}</h3>
+                             <div class="flex items-center gap-2">
+                                <h3 class="font-medium text-lg ${film.status === 'DRAFT' ? 'opacity-50' : ''}">${film.title}</h3>
                                 ${film.is_selected_work ? '<span class="material-icons text-primary text-sm" title="Featured on Home Page">stars</span>' : ''}
                             </div>
-                            ${film.is_selected_work ? '<div class="text-[8px] text-primary uppercase tracking-widest font-bold">Featured on Home</div>' : ''}
-                        </div>
-                        
-                        <div class="film-couple">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-1">COUPLE</div>
-                            <div class="${film.status === 'DRAFT' ? 'text-white/50' : ''}">${film.couple_name}</div>
                         </div>
 
                         <div class="film-category w-32">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-2">CATEGORY</div>
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-2">CATEGORY</div>
                             <span class="badge ${film.status === 'DRAFT' ? 'badge-outline opacity-50' : 'badge-outline'}">${film.category}</span>
                         </div>
 
                         <div class="film-status w-32">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-2">STATUS</div>
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-2">STATUS</div>
                             <span class="badge ${film.status === 'DRAFT' ? 'badge-outline opacity-50' : 'badge-outline'}" 
-                                  style="color: ${film.status === 'PUBLISHED' ? '#2ecc71' : 'var(--color-text)'}; border-color: ${film.status === 'PUBLISHED' ? '#2ecc71' : 'var(--color-outline)'};">
+                                  style="color: ${film.status === 'PUBLISHED' ? '#2ecc71' : 'var(--color-on-surface)'}; border-color: ${film.status === 'PUBLISHED' ? '#2ecc71' : 'var(--color-outline)'};">
                                 ${film.status}
                             </span>
-                        </div>
-
-                        <div class="film-date text-xs opacity-50 tracking-widest w-24">
-                            ${dateStr}
                         </div>
 
                         <div class="film-actions flex gap-4 ml-auto">
@@ -180,43 +189,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listContainer.innerHTML = html;
             } else {
                 listContainer.insertAdjacentHTML('beforeend', html);
+                if (loadMoreBtn) loadMoreBtn.innerHTML = 'LOAD MORE <span class="material-icons ml-1">expand_more</span>';
             }
 
-            setTimeout(() => {
-                const newCards = listContainer.querySelectorAll('.fade-in:not(.visible)');
-                newCards.forEach(c => c.classList.add('visible'));
-            }, 50);
-
+            // Bulk Delete Update
             const deleteBtn = document.getElementById('deleteSelectedBtn');
             const countSpn = document.getElementById('selectedCount');
-
             function updateBulkDeleteUI() {
                 const checkedCount = document.querySelectorAll('.film-bulk-checkbox:checked').length;
                 if (deleteBtn && countSpn) {
-                    if (checkedCount > 0) {
-                        deleteBtn.style.display = 'flex';
-                        countSpn.innerText = checkedCount;
-                    } else {
-                        deleteBtn.style.display = 'none';
-                    }
+                    deleteBtn.style.display = checkedCount > 0 ? 'flex' : 'none';
+                    countSpn.innerText = checkedCount;
                 }
             }
-
-            document.querySelectorAll('.film-bulk-checkbox').forEach(cb => {
-                cb.addEventListener('change', updateBulkDeleteUI);
-            });
+            document.querySelectorAll('.film-bulk-checkbox').forEach(cb => cb.addEventListener('change', updateBulkDeleteUI));
             updateBulkDeleteUI();
 
-            currentFilmsPage++;
-
+            // 5. Load More Visibility Check
+            const displayed = listContainer.querySelectorAll('.film-card').length;
             if (loadMoreBtn) {
-                loadMoreBtn.style.display = films.length < FILMS_PER_PAGE ? 'none' : 'block';
+                loadMoreBtn.style.display = (displayed >= totalCount || films.length < FILMS_PER_PAGE) ? 'none' : 'block';
             }
 
+            setTimeout(() => {
+                listContainer.querySelectorAll('.fade-in:not(.visible)').forEach(c => c.classList.add('visible'));
+            }, 50);
+
         } catch (err) {
-            logBackend('Fetch Films', 'ERROR', `Failed to load films (Filter: ${currentFilmsFilter})`, err);
+            logBackend('Fetch Films', 'ERROR', `Fetch failed`, err);
             if (reset) {
-                listContainer.innerHTML = `<div class="text-error text-center py-8 tracking-widest uppercase text-sm">FAILED TO FETCH: ${err.message}</div>`;
+                listContainer.innerHTML = `<div class="text-error text-center py-8">FAILED TO LOAD: ${err.message}</div>`;
             }
         }
     }
@@ -258,6 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- SUPABASE ALBUMS INTEGRATION ---
     let currentAlbumsPage = 0;
+    let lastVisibleAlbumDoc = null;
     const ALBUMS_PER_PAGE = 6;
     let currentAlbumsFilter = 'ALL';
     window.albumsMap = {};
@@ -276,33 +279,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (reset) {
             currentAlbumsPage = 0;
+            lastVisibleAlbumDoc = null;
             window.albumsMap = {};
-            listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">LOADING ALBUMS...</div>';
+            listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">LOADING ALBUMS...</div>';
             if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        } else {
+            if (loadMoreBtn) loadMoreBtn.innerHTML = '<span class="animate-spin material-icons mr-2">refresh</span> LOADING...';
         }
 
         try {
-            const q = query(collection(db, "albums"), orderBy("created_at", "desc"), limit(ALBUMS_PER_PAGE));
+            // 1. Build Query
+            const albumsRef = collection(db, "albums");
+            let q = query(albumsRef, orderBy("created_at", "desc"));
+            
+            if (lastVisibleAlbumDoc && !reset) {
+                q = query(q, startAfter(lastVisibleAlbumDoc), limit(ALBUMS_PER_PAGE));
+            } else {
+                q = query(q, limit(ALBUMS_PER_PAGE));
+            }
+
             const querySnapshot = await getDocs(q);
             const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            logBackend('Fetch Albums', 'SUCCESS', `Loaded ${albums.length} albums from Firestore`);
+            if (querySnapshot.docs.length > 0) {
+                lastVisibleAlbumDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+            }
 
-            // Update Stats
-            const snapshotCount = await getCountFromServer(collection(db, "albums"));
-            const albumCount = snapshotCount.data().count;
+            logBackend('Fetch Albums', 'SUCCESS', `Loaded ${albums.length} albums`);
+
+            // 2. Total Count
+            const countSnap = await getCountFromServer(albumsRef);
+            const totalCount = countSnap.data().count;
             const aStat = document.getElementById('statTotalAlbums');
-            if (aStat) aStat.innerHTML = `${albumCount}`;
+            if (aStat) aStat.innerHTML = `${totalCount}`;
 
             if (reset && albums.length === 0) {
-                listContainer.innerHTML = '<div class="opacity-50 text-center py-8 tracking-widest uppercase text-sm">NO ALBUMS IN DB. CLICK CREATE.</div>';
+                listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">NO ALBUMS IN DB</div>';
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
                 return;
             }
 
+            // 3. Render
             let html = '';
             albums.forEach(album => {
                 window.albumsMap[album.id] = album;
-
                 let dateStr = 'N/A';
                 const dateVal = album.event_date || album.created_at;
                 if (dateVal && dateVal.toDate) {
@@ -324,28 +344,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <h3 class="font-medium text-lg">${album.title}</h3>
                                 ${album.is_selected_home ? '<span class="material-icons text-primary text-sm" title="Featured on Home Page">stars</span>' : ''}
                             </div>
-                            ${album.is_selected_home ? '<div class="text-[8px] text-primary uppercase tracking-widest font-bold">Featured on Home</div>' : ''}
                         </div>
-                        
+
                         <div class="film-couple">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-1">CLIENT</div>
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-1">CLIENT</div>
                             <div>${album.client_name}</div>
                         </div>
 
                         <div class="film-category w-32">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-2">PHOTOS</div>
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-2">PHOTOS</div>
                             <div class="tracking-widest">${album.photo_count || 0} <span class="material-icons text-primary text-xs ml-1">photo</span></div>
                         </div>
 
                         <div class="film-status w-32">
-                            <div class="text-[10px] opacity-50 tracking-widest uppercase mb-2">ACCESS</div>
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-2">ACCESS</div>
                             <div class="flex items-center gap-2 text-xs tracking-widest uppercase">
-                                <span class="material-icons text-sm opacity-50">${album.access_level === 'PRIVATE' ? 'lock' : 'public'}</span> 
+                                <span class="material-icons text-sm opacity-100">${album.access_level === 'PRIVATE' ? 'lock' : 'public'}</span> 
                                 ${album.access_level}
                             </div>
                         </div>
 
-                        <div class="film-date text-xs opacity-50 tracking-widest w-24">
+                        <div class="film-date text-xs opacity-100 tracking-widest w-24">
                             ${dateStr}
                         </div>
 
@@ -362,41 +381,34 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listContainer.innerHTML = html;
             } else {
                 listContainer.insertAdjacentHTML('beforeend', html);
+                if (loadMoreBtn) loadMoreBtn.innerHTML = 'LOAD MORE <span class="material-icons ml-1">expand_more</span>';
+            }
+
+            // Bulk actions
+            const deleteSelectedBtn = document.getElementById('deleteSelectedAlbumsBtn');
+            const countSpn = document.getElementById('selectedAlbumsCount');
+            function updateBulkUI() {
+                const checkedCount = document.querySelectorAll('.album-bulk-checkbox:checked').length;
+                if (deleteSelectedBtn) deleteSelectedBtn.style.display = checkedCount > 0 ? 'flex' : 'none';
+                if (countSpn) countSpn.innerText = checkedCount;
+            }
+            document.querySelectorAll('.album-bulk-checkbox').forEach(cb => cb.addEventListener('change', updateBulkUI));
+            updateBulkUI();
+
+            // 4. Load More Visibility Check
+            const displayedCount = listContainer.querySelectorAll('.film-card').length;
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = (displayedCount >= totalCount || albums.length < ALBUMS_PER_PAGE) ? 'none' : 'block';
             }
 
             setTimeout(() => {
-                const newCards = listContainer.querySelectorAll('.fade-in:not(.visible)');
-                newCards.forEach(c => c.classList.add('visible'));
+                listContainer.querySelectorAll('.fade-in:not(.visible)').forEach(c => c.classList.add('visible'));
             }, 50);
-
-            const deleteSelectedBtn = document.getElementById('deleteSelectedAlbumsBtn');
-            const countSpn = document.getElementById('selectedAlbumsCount');
-
-            function updateAlbumBulkDeleteUI() {
-                const checkedCount = document.querySelectorAll('.album-bulk-checkbox:checked').length;
-                if (deleteSelectedBtn && countSpn) {
-                    if (checkedCount > 0) {
-                        deleteSelectedBtn.style.display = 'flex';
-                        countSpn.innerText = checkedCount;
-                    } else {
-                        deleteSelectedBtn.style.display = 'none';
-                    }
-                }
-            }
-
-            document.querySelectorAll('.album-bulk-checkbox').forEach(cb => cb.addEventListener('change', updateAlbumBulkDeleteUI));
-            updateAlbumBulkDeleteUI();
-
-            currentAlbumsPage++;
-
-            if (loadMoreBtn) {
-                loadMoreBtn.style.display = albums.length < ALBUMS_PER_PAGE ? 'none' : 'block';
-            }
 
         } catch (err) {
             logBackend('Fetch Albums', 'ERROR', `Failed to load albums`, err);
             if (reset) {
-                listContainer.innerHTML = `<div class="text-error text-center py-8 tracking-widest uppercase text-sm">FAILED TO FETCH: ${err.message}</div>`;
+                listContainer.innerHTML = `<div class="text-error text-center py-8">FAILED TO LOAD: ${err.message}</div>`;
             }
         }
     }
@@ -435,6 +447,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 html += `
                     <div class="film-card fade-in">
+                        <div class="bulk-select-check flex items-center pr-4 border-r border-outline mr-4" onclick="event.stopPropagation()">
+                            <input type="checkbox" class="testi-bulk-checkbox w-4 h-4 cursor-pointer accent-primary" 
+                                   value="${item.id}" onchange="updateSelectedTestiCount()">
+                        </div>
                         <div class="drag-handle"><span class="material-icons opacity-30">comment</span></div>
                         <div class="film-info">
                             <div class="flex items-center gap-2 mb-1">
@@ -487,8 +503,86 @@ document.addEventListener('DOMContentLoaded', async () => {
                 testimonialsFilterTabs.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
                 currentTestimonialsFilter = link.getAttribute('data-filter') || 'PUBLISHED';
+                // Reset bulk selection UI
+                const selectAll = document.getElementById('selectAllTestiCheckbox');
+                if (selectAll) selectAll.checked = false;
+                if (typeof updateSelectedTestiCount === 'function') updateSelectedTestiCount();
                 fetchTestimonials(true);
             });
+        });
+    }
+
+    // --- TESTI BULK DELETE LOGIC ---
+    window.updateSelectedTestiCount = function() {
+        const checkboxes = document.querySelectorAll('.testi-bulk-checkbox');
+        const checked = document.querySelectorAll('.testi-bulk-checkbox:checked');
+        const btn = document.getElementById('deleteSelectedTestiBtn');
+        const countSpan = document.getElementById('selectedTestiCount');
+        const selectAll = document.getElementById('selectAllTestiCheckbox');
+        
+        // Sync Select All checkbox state
+        if (selectAll && checkboxes.length > 0) {
+            selectAll.checked = checked.length === checkboxes.length;
+        }
+
+        if (btn && countSpan) {
+            if (checked.length > 0) {
+                btn.style.display = 'flex';
+                countSpan.innerText = checked.length;
+            } else {
+                btn.style.display = 'none';
+                countSpan.innerText = '0';
+            }
+        }
+    };
+
+    const selectAllTestiCheckbox = document.getElementById('selectAllTestiCheckbox');
+    if (selectAllTestiCheckbox) {
+        selectAllTestiCheckbox.addEventListener('change', () => {
+            const isChecked = selectAllTestiCheckbox.checked;
+            document.querySelectorAll('.testi-bulk-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+            updateSelectedTestiCount();
+        });
+    }
+
+    const deleteSelectedTestiBtn = document.getElementById('deleteSelectedTestiBtn');
+    if (deleteSelectedTestiBtn) {
+        deleteSelectedTestiBtn.addEventListener('click', async () => {
+            const checked = document.querySelectorAll('.testi-bulk-checkbox:checked');
+            const ids = Array.from(checked).map(cb => cb.value);
+            
+            if (ids.length === 0) return;
+            
+            if (confirm(`Are you sure you want to delete ${ids.length} selected testimonials permanently?`)) {
+                deleteSelectedTestiBtn.disabled = true;
+                deleteSelectedTestiBtn.innerText = 'DELETING...';
+                
+                try {
+                    for (const id of ids) {
+                        await deleteDoc(doc(db, "testimonials", id));
+                        logBackend('Bulk Delete Testimonial', 'SUCCESS', `Deleted testimonial ${id}`);
+                    }
+                    deleteSelectedTestiBtn.innerText = 'SUCCESS';
+                    setTimeout(() => {
+                        deleteSelectedTestiBtn.disabled = false;
+                        deleteSelectedTestiBtn.innerHTML = '<span class="material-icons text-sm">delete</span> <span>DELETE SELECTED (<span id="selectedTestiCount">0</span>)</span>';
+                        deleteSelectedTestiBtn.style.display = 'none';
+                    if (typeof updateSelectedTestiCount === 'function') {
+                        const selectAll = document.getElementById('selectAllTestiCheckbox');
+                        if (selectAll) selectAll.checked = false;
+                        updateSelectedTestiCount();
+                    }
+                    fetchTestimonials(true);
+                }, 1000);
+                } catch (err) {
+                    logBackend('Bulk Delete Testimonial', 'ERROR', 'Failure during bulk delete', err);
+                    alert('Bulk delete failed: ' + err.message);
+                    deleteSelectedTestiBtn.disabled = false;
+                    deleteSelectedTestiBtn.innerText = 'DELETE SELECTED';
+                }
+            }
         });
     }
 
@@ -965,6 +1059,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rating = parseInt(document.getElementById('testiRating').value) || 5;
 
             try {
+                // Limit check for featured testimonials
+                if (is_selected_home) {
+                    const q = query(collection(db, "testimonials"), where("is_selected_home", "==", true));
+                    const snapshot = await getCountFromServer(q);
+                    let count = snapshot.data().count;
+
+                    // If editing, and it was already featured, count is effectively one less
+                    if (editingTestimonialId && window.testimonialsMap[editingTestimonialId].is_selected_home) {
+                        count--;
+                    }
+
+                    if (count >= 4) {
+                        throw new Error(`You can only feature a maximum of 4 testimonials. Please unfeature another testimonial first.`);
+                    }
+                }
+
                 saveBtn.disabled = true;
                 saveBtn.innerText = 'SAVING...';
                 statusMsg.style.display = 'block';
@@ -1001,7 +1111,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             } catch (err) {
                 logBackend('Save Testimonial', 'ERROR', 'Failed to save review', err);
-                statusMsg.innerText = 'ERROR: ' + err.message;
+                if (statusMsg) {
+                    statusMsg.style.display = 'block';
+                    statusMsg.style.color = 'var(--color-error)';
+                    statusMsg.innerText = 'ERROR: ' + err.message;
+                }
                 saveBtn.disabled = false;
             }
         });
@@ -1104,26 +1218,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (btnEl) btnEl.innerText = 'SAVE FILM';
 
             // Clear HTML previews implicitly
-            const lblC = document.getElementById('currentCoverLabel');
-            if (lblC) lblC.classList.add('hidden');
-            const prC = document.getElementById('currentCoverPreview');
-            if (prC) prC.classList.add('hidden');
-            const lblV = document.getElementById('currentVideoLabel');
-            if (lblV) lblV.classList.add('hidden');
-            const prV = document.getElementById('currentVideoPreview');
-            if (prV) prV.classList.add('hidden');
-
             const modal = document.getElementById('addFilmModal');
             if (modal) {
                 modal.style.display = 'flex';
                 setTimeout(() => modal.classList.add('active'), 50);
             }
 
-            // Clear YouTube preview
-            const ytPreview = document.getElementById('ytUrlPreview');
-            if (ytPreview) ytPreview.classList.add('hidden');
-            const ytFrame = document.getElementById('addFilmYtPreview');
-            if (ytFrame) ytFrame.src = '';
         });
     }
 
@@ -1136,7 +1236,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         editingFilmId = id;
 
         // Pre-fill form
-        document.getElementById('addFilmCouple').value = film.couple_name || film.title || '';
+        document.getElementById('addFilmTitle').value = film.title || '';
+
+
+
         document.getElementById('addFilmCategory').value = film.category || 'WEDDING FILM';
         document.getElementById('addFilmStatus').value = film.status || 'PUBLISHED';
 
@@ -1153,19 +1256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btnEl) btnEl.innerText = 'SAVE CHANGES';
 
         // Show current data helper texts
-        const coverLabel = document.getElementById('currentCoverLabel');
-        const coverPreview = document.getElementById('currentCoverPreview');
-        if (coverPreview && coverLabel) {
-            if (film.cover_image_url && film.cover_image_url !== 'assets/cinematic-frame.jpg') {
-                coverLabel.classList.remove('hidden');
-                coverPreview.classList.remove('hidden');
-                coverPreview.innerHTML = `Current: <a href="${film.cover_image_url}" target="_blank" class="text-primary hover:underline">View Image</a>`;
-            } else {
-                coverLabel.classList.add('hidden');
-                coverPreview.classList.add('hidden');
-                coverPreview.innerText = '';
-            }
-        }
+
 
         const videoLabel = document.getElementById('currentVideoLabel');
         const videoPreview = document.getElementById('currentVideoPreview');
@@ -1214,6 +1305,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Reset select explicitly if needed or rely on reset()
                 const selectedCheckbox = document.getElementById('addFilmSelected');
                 if (selectedCheckbox) selectedCheckbox.checked = false;
+
+                // Explicitly clear additional fields if reset() misses them (though it shouldn't)
+                ['addFilmTitle', 'addFilmVideoUrl'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
 
                 const statusMsg = document.getElementById('uploadStatusMsg');
                 if (statusMsg) {
@@ -1273,13 +1370,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveBtn.innerText = 'UPLOADING...';
             saveBtn.disabled = true;
 
-            const coupleName = document.getElementById('addFilmCouple').value.trim();
-            const title = coupleName;
+            const title = document.getElementById('addFilmTitle').value.trim();
             const category = document.getElementById('addFilmCategory').value.trim();
             const status = document.getElementById('addFilmStatus').value;
             const isFeatured = document.getElementById('addFilmSelected').checked;
-
-            const coverInput = document.getElementById('addFilmCover');
             const videoUrlInput = document.getElementById('addFilmVideoUrl');
 
             try {
@@ -1299,29 +1393,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
 
-                let coverImageUrl = editingFilmId ? window.filmsMap[editingFilmId].cover_image_url : 'assets/cinematic-frame.jpg';
-                let videoUrl = (editingFilmId && window.filmsMap[editingFilmId].video_url) ? window.filmsMap[editingFilmId].video_url : '';
+                // Helper to extract YT ID
+                const getYouTubeId = (url) => {
+                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = url.match(regExp);
+                    return (match && match[2].length === 11) ? match[2] : null;
+                };
 
-                // 1. Upload Cover Image
-                if (coverInput && coverInput.files.length > 0) {
-                    if (statusMsg) statusMsg.innerText = 'UPLOADING COVER IMAGE...';
-                    const file = coverInput.files[0];
-                    const fileName = `cover_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-                    const storageRef = ref(storage, `films/covers/${fileName}`);
-                    await uploadBytes(storageRef, file);
-                    coverImageUrl = await getDownloadURL(storageRef);
-                    logBackend('Upload Film Cover', 'SUCCESS', `Cover uploaded: ${coverImageUrl}`);
-                }
+                const videoUrl = videoUrlInput.value.trim();
+                const ytId = getYouTubeId(videoUrl);
+                if (!ytId) throw new Error("A valid YouTube URL is required to extract a cover image.");
 
-                // 2. Get Video URL from Input
-                if (videoUrlInput && videoUrlInput.value.trim() !== '') {
-                    videoUrl = videoUrlInput.value.trim();
-                    logBackend('Film Video URL', 'SUCCESS', `Using URL: ${videoUrl}`);
-                }
+                let coverImageUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+                
+                // Fallback check can be added if needed, but for now we set the URL
+                logBackend('Cover Extraction', 'SUCCESS', `Extracted cover from YouTube: ${ytId}`);
 
                 const filmData = {
                     title,
-                    couple_name: coupleName,
+
+
                     category,
                     status,
                     is_selected_work: isFeatured,
@@ -1733,7 +1824,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!list) return;
 
         try {
-            list.innerHTML = `<div class="p-8 text-center opacity-40 uppercase text-[10px] tracking-widest">Loading Enquiries...</div>`;
+            list.innerHTML = `<div class="p-8 text-center opacity-100 uppercase text-[10px] tracking-widest">Loading Enquiries...</div>`;
 
             let q = query(collection(db, "enquiries"), orderBy("created_at", "desc"));
 
@@ -1771,7 +1862,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!list) return;
 
         if (enquiries.length === 0) {
-            list.innerHTML = '<div class="p-12 text-center opacity-30 uppercase text-[10px] tracking-widest">No enquiries found</div>';
+            list.innerHTML = `<div class="p-12 text-center opacity-100 uppercase text-[10px] tracking-widest">No enquiries found</div>`;
             return;
         }
 
@@ -1815,10 +1906,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <tr>
                     <td>
-                        <div class="font-medium text-white">${enq.client_name}</div>
-                        <div class="text-[10px] text-primary tracking-widest uppercase mt-1 opacity-80">${enq.category || 'INQUIRY'}</div>
+                        <div class="font-medium">${enq.client_name}</div>
+                        <div class="text-[10px] text-primary tracking-widest uppercase mt-1 opacity-100">${enq.category || 'INQUIRY'}</div>
                     </td>
-                    <td class="text-sm opacity-60">${timeStr}</td>
+                    <td class="text-sm opacity-100">${timeStr}</td>
                     <td class="text-xs uppercase tracking-widest">${enq.package_interest || 'N/A'}</td>
                     <td><span class="badge badge-outline" style="font-size: 9px; padding: 0.2rem 0.5rem;">${enq.status}</span></td>
                 </tr>
@@ -1864,7 +1955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <!-- New Flex Header for Actions -->
                 <div class="flex justify-between items-start mb-10 w-full border-b border-outline pb-8">
                     <div class="flex flex-col">
-                        <div class="text-primary text-[10px] tracking-[0.6em] uppercase mb-2 opacity-70">Enquiry Received</div>
+                        <div class="text-primary text-[10px] tracking-[0.6em] uppercase mb-2 opacity-100">Enquiry Received</div>
                         <h2 class="font-serif text-2xl">${enq.client_name}</h2>
                     </div>
                     
@@ -1881,7 +1972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
 
                 <div class="flex-1 overflow-y-auto pr-4 mb-8 custom-scrollbar">
-                    <div class="enquiry-form-grid">
+                    <div class="enquiry-form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                         <div class="enquiry-form-field">
                             <label class="enquiry-form-label">Email Address</label>
                             <div class="enquiry-form-value text-sm underline decoration-primary/20 underline-offset-4">${enq.email}</div>
@@ -1891,17 +1982,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="enquiry-form-value text-sm">${enq.phone || 'Not Provided'}</div>
                         </div>
                         <div class="enquiry-form-field">
+                            <label class="enquiry-form-label">Wedding Location</label>
+                            <div class="enquiry-form-value text-sm uppercase tracking-wider">${enq.wedding_location || 'Not Provided'}</div>
+                        </div>
+                        <div class="enquiry-form-field">
+                            <label class="enquiry-form-label">Wedding Date</label>
+                            <div class="enquiry-form-value text-sm">${enq.wedding_date || 'Not Provided'}</div>
+                        </div>
+                        <div class="enquiry-form-field">
                             <label class="enquiry-form-label">Interest Package</label>
                             <div class="enquiry-form-value text-primary font-bold uppercase tracking-widest text-[10px]">${reasonsStr}</div>
                         </div>
                         <div class="enquiry-form-field">
                             <label class="enquiry-form-label">Date Received</label>
-                            <div class="enquiry-form-value opacity-60 text-sm">${timeStr}</div>
+                            <div class="enquiry-form-value opacity-100 text-sm">${timeStr}</div>
                         </div>
                     </div>
 
                     <div class="enquiry-message-area mt-4">
-                        <label class="enquiry-form-label mb-3 block opacity-50">Private Message</label>
+                        <label class="enquiry-form-label mb-3 block opacity-100">Private Message</label>
                         <div class="enquiry-form-value leading-relaxed whitespace-pre-wrap" style="min-height: 200px; align-items: flex-start; padding: 1.5rem 1.75rem;">
                             ${enq.message}
                         </div>

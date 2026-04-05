@@ -21,9 +21,7 @@
     <link rel="stylesheet" href="css/animations.css">
     <style>
         /* Replicating the Dribbble Testimonial Animation Design */
-        :root {
-            --marquee-duration: 50s; /* Slower default for ultra-wide/large screens */
-        }
+
 
         body {
             min-height: 100vh;
@@ -44,7 +42,7 @@
             max-width: 1400px;
             padding: 2rem 0;
             position: relative;
-            overflow: hidden;
+            /* Container allowed to grow naturally */
         }
 
         .marquee-header {
@@ -85,37 +83,15 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
-            height: 80vh; /* Dynamic height for laptop/desktop view */
-            min-height: 600px;
-            max-height: 1000px;
-            /* Fixed height for the scrolling area */
-            mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            align-items: start; /* Prevent columns from stretching to match row height */
+            /* Naturally expanding height for static view */
+            width: 100%;
         }
 
         .marquee-col {
             display: flex;
             flex-direction: column;
             gap: 2rem;
-            animation: vertical-marquee var(--marquee-duration) linear infinite;
-        }
-
-        .marquee-col.reverse {
-            animation-direction: reverse;
-        }
-
-        .marquee-col.fast {
-            --marquee-duration: 30s;
-        }
-
-        @keyframes vertical-marquee {
-            0% {
-                transform: translateY(0);
-            }
-
-            100% {
-                transform: translateY(-50%);
-            }
         }
 
         /* Testimonial Section Styles moved to components.css for global use */
@@ -128,18 +104,12 @@
         }
 
         @media (max-width: 991px) {
-            :root {
-                --marquee-duration: 30s; /* Balanced speed for tablets */
-            }
             .marquee-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 768px) {
-            :root {
-                --marquee-duration: 22s; /* Faster speed for mobile */
-            }
             .marquee-container {
                 padding: 4rem 2rem;
                 border-radius: 40px;
@@ -163,6 +133,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+        }
+
+        .testimonial-card-dribbble {
+            width: 100%;
+            margin-bottom: 2rem;
+            background: var(--color-surface-lowest) !important; /* Force match first card's white bg */
+            border: 1px solid var(--color-primary) !important; /* Force match gold border */
+            height: auto !important;
         }
 
         .noir-field {

@@ -40,15 +40,15 @@ async function initTestimonials() {
                 const colIndex = index % columns.length;
                 const card = `
                     <div class="testimonial-card-dribbble">
-                        <div class="card-quote-icon">"</div>
-                        <div class="stars-preview text-primary text-[10px] mb-4">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>
+                        <div class="card-quote-icon">“</div>
+                        <div class="stars-preview">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>
                         <p class="card-body-text italic font-serif">"${item.review_text}"</p>
                         <div class="card-footer">
                             <div class="author-avatar">
                                 <span class="material-icons">person</span>
                             </div>
                             <div class="author-info">
-                                <span class="author-name-bold uppercase tracking-widest">${item.client_name}</span>
+                                <span class="author-name-bold">${item.client_name}</span>
                             </div>
                         </div>
                     </div>
@@ -56,11 +56,8 @@ async function initTestimonials() {
                 columns[colIndex].innerHTML += card;
             });
 
-            // Duplicate for infinite scroll effect
-            columns.forEach(col => {
-                const clones = col.innerHTML;
-                col.innerHTML += clones;
-            });
+            // No duplication needed for static grid
+
 
         } catch (err) {
             logBackend('Fetch Testimonials', 'ERROR', 'Could not load client stories', err);
@@ -82,15 +79,15 @@ async function initTestimonials() {
 
             homeContainer.innerHTML = itemsToShow.map(item => `
                 <div class="testimonial-card-dribbble fade-in">
-                    <div class="card-quote-icon">"</div>
-                    <div class="stars-preview text-primary text-[10px] mb-4">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>
+                    <div class="card-quote-icon">“</div>
+                    <div class="stars-preview">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>
                     <p class="card-body-text italic font-serif">"${item.review_text}"</p>
                     <div class="card-footer">
                         <div class="author-avatar">
                             <span class="material-icons">person</span>
                         </div>
                         <div class="author-info">
-                            <span class="author-name-bold uppercase tracking-widest">${item.client_name}</span>
+                            <span class="author-name-bold">${item.client_name}</span>
                         </div>
                     </div>
                 </div>

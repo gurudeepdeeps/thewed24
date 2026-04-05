@@ -107,7 +107,7 @@
                     <span class="material-icons profile-avatar"
                         style="font-size: 2.5rem; color: var(--color-primary);">account_circle</span>
                     <a href="#" id="topbarLogoutBtn"
-                        class="logout-link text-xs tracking-widest uppercase ml-4 opacity-50 hover:opacity-100 transition-medium">LOGOUT</a>
+                        class="logout-link text-xs tracking-widest uppercase ml-4 opacity-100 hover:opacity-100 transition-medium">LOGOUT</a>
                 </div>
             </div>
         </header>
@@ -164,7 +164,7 @@
                                                 <div
                                                     class="inline-block animate-spin border-t-2 border-primary rounded-full w-4 h-4 mb-3">
                                                 </div>
-                                                <div class="opacity-40 uppercase text-[9px] tracking-[0.4em]">Loading
+                                                <div class="opacity-100 uppercase text-[9px] tracking-[0.4em]">Loading
                                                     Recent Inquiries...</div>
                                             </div>
                                         </td>
@@ -200,7 +200,7 @@
                             <span>DELETE SELECTED (<span id="selectedCount">0</span>)</span>
                         </button>
                     </div>
-                    <div class="text-xs tracking-widest uppercase opacity-40">
+                    <div class="text-xs tracking-widest uppercase opacity-100">
                         SHOWING DB FILMS
                     </div>
                 </div>
@@ -239,7 +239,7 @@
                             <span>DELETE SELECTED (<span id="selectedAlbumsCount">0</span>)</span>
                         </button>
                     </div>
-                    <div class="text-xs tracking-widest uppercase opacity-40">
+                    <div class="text-xs tracking-widest uppercase opacity-100">
                         SHOWING DB ALBUMS
                     </div>
                 </div>
@@ -300,7 +300,7 @@
                                             class="w-full h-full object-cover opacity-80" alt="Preview">
                                     </div>
                                     <div class="flex-grow space-y-3">
-                                        <input type="file" id="aboutPortraitFile" class="form-input block w-full text-sm text-white/60
+                                        <input type="file" id="aboutPortraitFile" class="form-input block w-full text-sm
                                             file:mr-4 file:py-2 file:px-4
                                             file:rounded-full file:border-0
                                             file:text-xs file:font-semibold
@@ -308,8 +308,8 @@
                                             hover:file:bg-primary/30 outline-none cursor-pointer" accept="image/*">
                                         <input type="hidden" id="aboutPortraitUrl">
                                         <div class="flex items-center gap-2">
-                                            <span class="material-icons text-[14px] opacity-40">aspect_ratio</span>
-                                            <p class="text-[10px] opacity-40 italic">Recommended Ratio: <strong
+                                            <span class="material-icons text-[14px] opacity-100">aspect_ratio</span>
+                                            <p class="text-[10px] opacity-100 italic">Recommended Ratio: <strong
                                                     class="text-primary/80">4:5 (Vertical)</strong>. This matches your
                                                 website's portrait layout.</p>
                                         </div>
@@ -318,7 +318,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label text-xs tracking-widest uppercase opacity-60 mb-2 block">The
+                                <label class="form-label text-xs tracking-widest uppercase opacity-80 mb-2 block">The
                                     Founder's Story / Bio</label>
                                 <textarea id="aboutBio"
                                     class="form-input bg-white/5 border-white/10 rounded-sm w-full p-3 focus:border-primary outline-none transition-all h-32"></textarea>
@@ -393,9 +393,26 @@
                             class="material-icons text-sm">add</span> ADD TESTIMONIAL</button>
                 </div>
 
+                <div class="table-actions flex justify-between items-center mb-6 px-4">
+                    <div class="flex gap-6 items-center">
+                        <div class="flex items-center gap-2 px-3 py-2 border border-outline rounded-sm opacity-60 hover:opacity-100 transition-opacity">
+                            <input type="checkbox" id="selectAllTestiCheckbox" class="w-4 h-4 cursor-pointer accent-primary">
+                            <label for="selectAllTestiCheckbox" class="text-[10px] tracking-widest uppercase cursor-pointer">All</label>
+                        </div>
+                        <button id="deleteSelectedTestiBtn" class="btn btn-outline flex items-center gap-2"
+                            style="display: none; border-color: var(--color-error); color: var(--color-error); padding: 0.5rem 1.5rem; background: transparent;">
+                            <span class="material-icons text-sm">delete</span>
+                            <span>DELETE SELECTED (<span id="selectedTestiCount">0</span>)</span>
+                        </button>
+                    </div>
+                    <div class="text-xs tracking-widest uppercase opacity-100">
+                        MANAGE REVIEWS
+                    </div>
+                </div>
+
                 <div id="testimonialsList" class="film-list flex flex-col gap-4 mt-6">
                     <!-- Dynamic Testimonials Load Here -->
-                    <div class="opacity-50 text-center py-12 tracking-widest uppercase text-sm">SELECT TAB TO LOAD...
+                    <div class="opacity-100 text-center py-12 tracking-widest uppercase text-sm">SELECT TAB TO LOAD...
                     </div>
                 </div>
             </section>
@@ -415,14 +432,14 @@
                     <!-- Inbox List -->
                     <div class="enquiriesList-pane custom-scrollbar" id="enquiriesList">
                         <!-- Dynamic Enquiries Load Here -->
-                        <div class="p-8 text-center opacity-40 uppercase text-[10px] tracking-widest">
+                        <div class="p-8 text-center opacity-100 uppercase text-[10px] tracking-widest">
                             Loading Enquiries...
                         </div>
                     </div>
 
                     <!-- Message Reading Pane -->
                     <div class="enquiryDetails-pane relative" id="enquiryDetails">
-                        <div class="flex flex-col items-center justify-center h-full opacity-30 text-center">
+                        <div class="flex flex-col items-center justify-center h-full opacity-100 text-center">
                             <span class="material-icons text-5xl mb-4">mail_outline</span>
                             <p class="uppercase tracking-[0.3em] text-xs">Select an enquiry to read</p>
                         </div>
@@ -456,9 +473,9 @@
             <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
 
             <form id="newFilmForm" class="text-left">
-                <div class="form-group">
-                    <label class="form-label">Couple / Client Name *</label>
-                    <input type="text" id="addFilmCouple" class="form-input" required>
+                <div class="form-group mb-6">
+                    <label class="form-label">Film Title / Couple Names *</label>
+                    <input type="text" id="addFilmTitle" class="form-input text-lg py-4" required placeholder="e.g. Priyanka & Rahul | A Royal Affair">
                 </div>
                 <div class="grid grid-cols-2 gap-6">
                     <div class="form-group">
@@ -479,6 +496,8 @@
                     </div>
                 </div>
 
+
+
                 <div class="form-group mb-6">
                     <label class="flex items-center gap-4 cursor-pointer group">
                         <div class="relative">
@@ -491,15 +510,9 @@
                             </div>
                         </div>
                         <span
-                            class="text-xs uppercase tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">Feature
+                            class="text-xs uppercase tracking-widest opacity-80 group-hover:opacity-100 transition-opacity">Feature
                             in Selected Works on Home Page (Max 4)</span>
                     </label>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Cover Image <span id="currentCoverLabel"
-                            class="text-[9px] opacity-50 ml-2 hidden">(Keep empty to use existing)</span></label>
-                    <input type="file" id="addFilmCover" class="form-input" accept="image/*">
-                    <div id="currentCoverPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
                 </div>
                 <div class="form-group">
                         <label class="form-label">
@@ -593,7 +606,7 @@
                 <!-- ADDED: Bulk Image Upload Field -->
                 <div class="form-group">
                     <label class="form-label">Gallery Photos (Select Multiple) <span
-                            class="text-[9px] opacity-50 ml-2 italic">Optional - You can also add more
+                            class="text-[9px] opacity-100 ml-2 italic">Optional - You can also add more
                             later</span></label>
                     <input type="file" id="addAlbumPhotosBulk" class="form-input" multiple accept="image/*">
                 </div>

@@ -113,7 +113,7 @@
 
 .nav-link .material-icons {
     font-size: 1.25rem;
-    opacity: 0.8;
+    opacity: 1;
 }
 
 .sidebar-action {
@@ -150,7 +150,7 @@
     border: none;
     color: var(--color-on-surface);
     cursor: pointer;
-    opacity: 0.6;
+    opacity: 1;
     transition: var(--transition-medium);
     display: flex;
     align-items: center;
@@ -408,6 +408,13 @@
     display: flex;
 }
 
+.bulk-select-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 45px;
+}
+
 .film-thumb {
     width: 140px;
     height: 80px;
@@ -435,7 +442,7 @@
     width: 100%;
     text-align: center;
     font-size: 0.65rem;
-    opacity: 0.8;
+    opacity: 1;
 }
 
 .film-info {
@@ -468,7 +475,7 @@
 
 .icon-btn-small .material-icons {
     font-size: 1.3rem;
-    opacity: 0.6;
+    opacity: 1;
     transition: opacity 0.3s ease;
 }
 
@@ -599,29 +606,54 @@
     font-size: 0.65rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--color-on-surface-variant);
+    opacity: 1;
     margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.form-input::placeholder {
+    color: var(--color-on-surface);
+    opacity: 1;
 }
 
 .form-input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    padding: 1rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.03); /* subtle dark overlay on light surface */
+    border: 1px solid var(--color-outline);
+    color: var(--color-on-surface);
+    padding: 0.85rem 1rem;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
     outline: none;
-    transition: border-color var(--transition-fast);
+    transition: all var(--transition-fast);
+    border-radius: 2px;
+}
+
+.form-input:hover {
+    border-color: rgba(0, 0, 0, 0.2);
 }
 
 .form-input:focus {
     border-color: var(--color-primary);
+    background: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+}
+
+/* Specific styling for select and date with default arrows/pickers */
+.form-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: none; /* remove inversion since we are on light background */
+    opacity: 1;
+    cursor: pointer;
+}
+
+.form-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }
 
 .form-input option {
-    background-color: var(--color-background);
-    color: white;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
 }
 
 .h-\[600px\] { height: 600px; }
@@ -638,7 +670,12 @@
 
 .rounded-sm { border-radius: 4px; }
 
-.opacity-70 { opacity: 0.7; }
+.opacity-100 { opacity: 1; }
+.opacity-70 { opacity: 1; }
+.opacity-60 { opacity: 1; }
+.opacity-50 { opacity: 1; }
+.opacity-40 { opacity: 1; }
+.opacity-30 { opacity: 1; }
 
 .text-error { color: #DB5A5A; }
 .hover\:text-error:hover { color: #DB5A5A; }
@@ -887,7 +924,7 @@
 
 .enquiry-item {
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--color-outline);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
     position: relative;
@@ -895,7 +932,7 @@
 }
 
 .enquiry-item:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: rgba(54, 48, 42, 0.04);
 }
 
 .enquiry-item.active {
@@ -904,19 +941,20 @@
 }
 
 .enquiry-item.unread {
-    background-color: rgba(255, 255, 255, 0.01);
+    background-color: rgba(54, 48, 42, 0.02);
 }
 
 .enquiry-item.unread h4 {
     font-weight: 700;
-    color: #fff;
+    color: var(--color-on-surface);
 }
 
 .enquiry-item-meta {
     font-size: 0.65rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-on-surface-variant);
+    color: var(--color-on-surface);
+    opacity: 1;
     margin-bottom: 0.5rem;
     display: flex;
     justify-content: space-between;
@@ -931,7 +969,7 @@
 .enquiry-item-excerpt {
     font-size: 0.8rem;
     color: var(--color-on-surface-variant);
-    opacity: 0.6;
+    opacity: 1;
     line-height: 1.5;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -973,17 +1011,17 @@
 
 .details-meta-value {
     font-size: 0.95rem;
-    color: #fff;
+    color: var(--color-on-surface);
     font-weight: 500;
 }
 
 .enquiry-message-container {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(54, 48, 42, 0.02);
+    border: 1px solid var(--color-outline);
     padding: 3rem;
     border-radius: 4px;
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-on-surface);
     font-size: 1.1rem;
     letter-spacing: 0.01em;
     white-space: pre-wrap;
@@ -1076,12 +1114,12 @@
 }
 
 .enquiry-form-value {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--color-outline);
     padding: 0.85rem 1.25rem;
     border-radius: 2px;
     font-size: 0.9rem;
-    color: #fff;
+    color: var(--color-on-surface);
     min-height: 45px;
     display: flex;
     align-items: center;
@@ -1098,7 +1136,7 @@
     align-items: center;
     gap: 0.3rem;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--color-outline);
     color: var(--color-on-surface-variant);
     cursor: pointer;
     transition: all 0.2s ease;

@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     client_name: web3Data.name,
                     email: web3Data.email,
                     phone: web3Data.phone,
+                    wedding_location: web3Data.wedding_location || 'NOT SPECIFIED',
+                    wedding_date: web3Data.wedding_date || 'NOT SPECIFIED',
                     message: web3Data.message,
                     package_interest: reasons.length > 0 ? reasons.join(', ').toUpperCase() : 'GENERAL',
                     reasons: reasons,

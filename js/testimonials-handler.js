@@ -77,7 +77,10 @@ async function initTestimonials() {
                 return;
             }
 
-            homeContainer.innerHTML = featured.map(item => `
+            // Only show 4 testimonials on the index page
+            const itemsToShow = featured.slice(0, 4);
+
+            homeContainer.innerHTML = itemsToShow.map(item => `
                 <div class="testimonial-card-dribbble fade-in">
                     <div class="card-quote-icon">"</div>
                     <div class="stars-preview text-primary text-[10px] mb-4">${'★'.repeat(item.rating || 5)}${'☆'.repeat(5 - (item.rating || 5))}</div>

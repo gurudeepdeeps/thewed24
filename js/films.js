@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const FILMS_PER_PAGE = 6;
     let allFilms = [];
     
+    const getYouTubeId = (url) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
     async function loadFilms(reset = false) {
         if (reset) {
             currentPage = 0;
@@ -47,21 +54,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             let html = '';
             filmsToRender.forEach(film => {
-                // Extracted poster & video. We remove default fallbacks as requested.
-                const videoSrc = film.video_url ? `src="${film.video_url}"` : '';
-                const posterAttr = film.cover_image_url ? `poster="${film.cover_image_url}"` : '';
+                const ytId = getYouTubeId(film.video_url);
+                const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1&autohide=1&showinfo=0` : '';
                 
-                html += `
-                    <div class="video-item fade-in visible">
-                        <div class="video-wrapper aspect-video bg-surface-container overflow-hidden relative">
-                            <video ${videoSrc} controls class="w-full h-full object-cover" ${posterAttr} preload="metadata" playsinline onclick="if (event.offsetY < this.offsetHeight * 0.85) { event.preventDefault(); this.paused ? this.play() : this.pause(); }"></video>
+                if (ytId) {
+                    html += `
+                        <div class="video-item fade-in visible">
+                            <div class="video-wrapper aspect-video bg-surface-container overflow-hidden relative shadow-2xl">
+                                <iframe 
+                                    width="100%" 
+                                    height="100%" 
+                                    src="${embedUrl}" 
+                                    title="Wedding Film" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allowfullscreen
+                                    class="absolute inset-0 w-full h-full">
+                                </iframe>
+                            </div>
+                            <div class="mt-8">
+                                <h3 class="text-2xl italic font-serif">${film.couple_name || film.title || ''}</h3>
+                                <p class="text-xs tracking-widest uppercase text-primary opacity-60 mt-3">${film.category || ''}</p>
+                            </div>
                         </div>
-                        <div class="mt-8">
-                            <h3 class="text-2xl italic font-serif">${film.couple_name || film.title || ''}</h3>
-                            <p class="text-xs tracking-widest uppercase text-primary opacity-60 mt-3">${film.category || ''}</p>
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
             });
             
             if (reset) {

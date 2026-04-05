@@ -1101,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (titleEl) titleEl.innerText = 'Upload New Film';
 
             const btnEl = document.getElementById('saveFilmBtn');
-            if (btnEl) btnEl.innerText = 'UPLOAD FILM';
+            if (btnEl) btnEl.innerText = 'SAVE FILM';
 
             // Clear HTML previews implicitly
             const lblC = document.getElementById('currentCoverLabel');
@@ -1118,6 +1118,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modal.style.display = 'flex';
                 setTimeout(() => modal.classList.add('active'), 50);
             }
+
+            // Clear YouTube preview
+            const ytPreview = document.getElementById('ytUrlPreview');
+            if (ytPreview) ytPreview.classList.add('hidden');
+            const ytFrame = document.getElementById('addFilmYtPreview');
+            if (ytFrame) ytFrame.src = '';
         });
     }
 
@@ -1163,11 +1169,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const videoLabel = document.getElementById('currentVideoLabel');
         const videoPreview = document.getElementById('currentVideoPreview');
+        const videoInput = document.getElementById('addFilmVideoUrl');
+        if (videoInput) {
+            videoInput.value = film.video_url || '';
+            // Trigger input event to show preview
+            videoInput.dispatchEvent(new Event('input'));
+        }
         if (videoPreview && videoLabel) {
             if (film.video_url) {
                 videoLabel.classList.remove('hidden');
                 videoPreview.classList.remove('hidden');
-                videoPreview.innerHTML = `Current: <a href="${film.video_url}" target="_blank" class="text-primary hover:underline">View Video</a>`;
+                videoPreview.innerHTML = `Current URL: <a href="${film.video_url}" target="_blank" class="text-primary hover:underline">${film.video_url}</a>`;
             } else {
                 videoLabel.classList.add('hidden');
                 videoPreview.classList.add('hidden');
@@ -1194,6 +1206,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 addFilmModal.style.display = 'none';
                 if (newFilmForm) newFilmForm.reset();
+                const ytPreview = document.getElementById('ytUrlPreview');
+                if (ytPreview) ytPreview.classList.add('hidden');
+                const ytFrame = document.getElementById('addFilmYtPreview');
+                if (ytFrame) ytFrame.src = '';
 
                 // Reset select explicitly if needed or rely on reset()
                 const selectedCheckbox = document.getElementById('addFilmSelected');
@@ -1210,6 +1226,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (closeFilmModalBtn) closeFilmModalBtn.addEventListener('click', closeAddFilmModal);
     if (cancelFilmBtn) cancelFilmBtn.addEventListener('click', closeAddFilmModal);
+
+    // Youtube Preview Logic
+    const filmVideoUrlInput = document.getElementById('addFilmVideoUrl');
+    if (filmVideoUrlInput) {
+        filmVideoUrlInput.addEventListener('input', () => {
+            const url = filmVideoUrlInput.value.trim();
+            const previewContainer = document.getElementById('ytUrlPreview');
+            const frame = document.getElementById('addFilmYtPreview');
+            
+            if (!url) {
+                if (previewContainer) previewContainer.classList.add('hidden');
+                if (frame) frame.src = '';
+                return;
+            }
+
+            const getYouTubeId = (url) => {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : null;
+            };
+
+            const ytId = getYouTubeId(url);
+            if (ytId) {
+                if (previewContainer) previewContainer.classList.remove('hidden');
+                if (frame) frame.src = `https://www.youtube.com/embed/${ytId}`;
+            } else {
+                if (previewContainer) previewContainer.classList.add('hidden');
+                if (frame) frame.src = '';
+            }
+        });
+    }
 
     if (newFilmForm) {
         newFilmForm.addEventListener('submit', async (e) => {
@@ -1233,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isFeatured = document.getElementById('addFilmSelected').checked;
 
             const coverInput = document.getElementById('addFilmCover');
-            const videoInput = document.getElementById('addFilmVideo');
+            const videoUrlInput = document.getElementById('addFilmVideoUrl');
 
             try {
                 // Limit Check for featured films
@@ -1266,15 +1313,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     logBackend('Upload Film Cover', 'SUCCESS', `Cover uploaded: ${coverImageUrl}`);
                 }
 
-                // 2. Upload Video
-                if (videoInput && videoInput.files.length > 0) {
-                    if (statusMsg) statusMsg.innerText = 'UPLOADING VIDEO (THIS CAN TAKE SEVERAL MINUTES)...';
-                    const file = videoInput.files[0];
-                    const fileName = `video_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
-                    const storageRef = ref(storage, `films/videos/${fileName}`);
-                    await uploadBytes(storageRef, file);
-                    videoUrl = await getDownloadURL(storageRef);
-                    logBackend('Upload Film Video', 'SUCCESS', `Video uploaded: ${videoUrl}`);
+                // 2. Get Video URL from Input
+                if (videoUrlInput && videoUrlInput.value.trim() !== '') {
+                    videoUrl = videoUrlInput.value.trim();
+                    logBackend('Film Video URL', 'SUCCESS', `Using URL: ${videoUrl}`);
                 }
 
                 const filmData = {

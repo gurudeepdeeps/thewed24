@@ -149,18 +149,20 @@
 }
 
 :root {
-    /* Color Palette (Based on Stitch Noir Design) */
-    --color-bg: #131313;
-    --color-surface: #1A1A1A;
-    --color-surface-container: #201F1F;
-    --color-surface-high: #2A2A2A;
-    --color-surface-lowest: #0E0E0E;
-    --color-on-surface: #E5E2E1;
-    --color-on-surface-variant: #A0A0A0;
+    /* Color Palette (Based on Lightbucket Productions) */
+    --color-bg: #F6F3EC;
+    --color-surface: #EFEBE1;
+    --color-surface-container: #E8E2D2;
+    --color-surface-high: #E0DACA;
+    --color-surface-lowest: #FFFFFF;
+    --color-on-surface: #36302A;
+    --color-on-surface-variant: #6D645E;
     --color-primary: #D4AF37;
     /* Metallic Gold */
-    --color-on-primary: #000000;
-    --color-outline: rgba(255, 255, 255, 0.1);
+    --color-on-primary: #FFFFFF;
+    --color-outline: rgba(54, 48, 42, 0.1);
+    --text-primary: var(--color-on-surface);
+    --text-secondary: var(--color-on-surface-variant);
 
     /* Typography Tokens */
     --font-headline: 'Cormorant Garamond', serif;
@@ -182,12 +184,39 @@
 
 body {
     background-color: var(--color-bg);
-    color: var(--color-on-surface);
+    color: var(--text-primary);
     font-family: var(--font-body);
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.section-light {
+    background-color: var(--color-bg);
+    --text-primary: var(--color-on-surface);
+    --text-secondary: var(--color-on-surface-variant);
+    color: var(--text-primary);
+}
+
+.section-dark {
+    background-color: var(--color-on-surface);
+    --text-primary: var(--color-surface-lowest);
+    --text-secondary: rgba(255, 255, 255, 0.6);
+    color: var(--text-primary);
+}
+
+/* Ensure headings and common elements follow the section theme */
+.section-dark h1, .section-dark h2, .section-dark h3, .section-dark h4, .section-dark h5, .section-dark h6 {
+    color: var(--text-primary);
+}
+
+.section-dark .opacity-40, .section-dark .opacity-60 {
+    color: var(--text-secondary);
+}
+
+.section-light h1, .section-light h2, .section-light h3, .section-light h4, .section-light h5, .section-light h6 {
+    color: var(--text-primary);
 }
 
 h1,
@@ -201,11 +230,13 @@ h4,
 .brand-headline {
     font-family: var(--font-brand-headline) !important;
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 .brand-tagline {
     font-family: var(--font-brand-tagline) !important;
     font-weight: 300;
+    color: var(--text-secondary);
 }
 
 a {
@@ -682,22 +713,28 @@ ul {
 }
 
 /* Responsive adjustments */
-@media (min-width: 1024px) {
-    .lg\:pl-20 {
-        padding-left: 5rem;
-    }
+/* Responsive Column Utilities for Masonry */
+.columns-1 {
+    column-count: 1 !important;
+}
 
-    .lg\:pl-24 {
-        padding-left: 6rem;
+@media (min-width: 768px) {
+    .md\:columns-2 {
+        column-count: 2 !important;
     }
+    
+    .md\:columns-3 {
+        column-count: 3 !important;
+    }
+    
+    .md\:columns-4 {
+        column-count: 4 !important;
+    }
+}
 
-    .lg\:text-6xl {
-        font-size: 3.5rem !important;
-    }
-
-    .lg\:text-7xl {
-        font-size: 4.5rem !important;
-    }
+.break-inside-avoid {
+    break-inside: avoid !important;
+    -webkit-column-break-inside: avoid;
 }
 
 @media (max-width: 1024px) {

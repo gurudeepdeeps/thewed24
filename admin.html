@@ -502,10 +502,16 @@
                     <div id="currentCoverPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Upload Film / Video File <span id="currentVideoLabel"
-                            class="text-[9px] opacity-50 ml-2 hidden">(Keep empty to use existing)</span></label>
-                    <input type="file" id="addFilmVideo" class="form-input" accept="video/*">
-                    <div id="currentVideoPreview" class="mt-2 text-xs opacity-60 break-all hidden"></div>
+                        <label class="form-label">
+                            YOUTUBE VIDEO URL
+                            <span class="text-[10px] opacity-40 ml-2">REQUIRED FOR PERFORMANCE</span>
+                        </label>
+                        <input type="url" id="addFilmVideoUrl" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+                        <div id="ytUrlPreview" class="mt-4 aspect-video bg-black/20 rounded hidden">
+                             <iframe id="addFilmYtPreview" width="100%" height="100%" src="" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div id="currentVideoLabel" class="text-[10px] uppercase tracking-widest opacity-40 mt-4 hidden">Current Video</div>
+                        <div id="currentVideoPreview" class="text-xs mt-2 hidden"></div>
                 </div>
 
                 <div id="uploadStatusMsg" class="text-xs text-primary tracking-widest uppercase mt-2 mb-2 text-center"
@@ -514,7 +520,7 @@
                 <div class="flex gap-4 justify-end mt-4">
                     <button type="button" class="btn btn-outline" id="cancelFilmBtn"
                         style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
-                    <button type="submit" class="btn btn-primary" id="saveFilmBtn">UPLOAD FILM</button>
+                    <button type="submit" class="btn btn-primary" id="saveFilmBtn">SAVE FILM</button>
                 </div>
             </form>
         </div>

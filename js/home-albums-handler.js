@@ -46,29 +46,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Note: Since index.html doesn't have the full album-gallery.js lightbox logic,
             // we redirect the user to the album.html page.
-            albumEl.onclick = () => window.location.href = 'album';
-
+            albumEl.className = 'album-preview-item h-full fade-in flex flex-col group';
+            
             const coverImage = album.cover_image_url 
-                ? `<img src="${album.cover_image_url}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy">` 
+                ? `<img src="${album.cover_image_url}"` 
                 : '<div class="w-full h-full bg-surface-container flex items-center justify-center"><span class="material-icons opacity-20 text-4xl">photo_album</span></div>';
 
             albumEl.innerHTML = `
-                <div class="relative aspect-[3/4] bg-surface-container overflow-hidden mb-12">
-                    ${coverImage}
-                    <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center">
-                        <span class="btn-primary w-14 h-14 rounded-full flex items-center justify-center">
-                            <span class="material-icons text-white">collections</span>
-                        </span>
-                    </div>
+                <div class="relative aspect-video bg-surface-container overflow-hidden mb-8 cursor-pointer" onclick="window.location.href='album?id=${album.id}'">
+                    ${coverImage} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                 </div>
-                <div class="flex flex-col flex-grow">
-                    <span class="text-[10px] tracking-[0.4em] text-primary/60 uppercase mb-4">${date}</span>
-                    <h3 class="text-3xl font-normal leading-tight">${album.title}</h3>
-                    <div class="w-8 h-px bg-primary/20 my-6 transition-all group-hover:w-16"></div>
-                    <div class="mt-auto flex items-center gap-4 text-xs uppercase tracking-widest opacity-60 group-hover:text-primary group-hover:opacity-100 transition-all">
-                        <span>Explore Narrative</span>
-                        <span class="material-icons text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                <div class="mt-8">
+                    <div class="flex items-center justify-between gap-6 flex-wrap">
+                        <h3 class="text-3xl italic font-bold font-serif text-primary">${album.title}</h3>
+                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap ml-auto" onclick="event.stopPropagation(); window.location.href='album?id=${album.id}'">View Full Album</button>
                     </div>
+                    <p class="text-[10px] tracking-[0.3em] uppercase text-primary/60 mt-3">${date}</p>
                 </div>
             `;
 

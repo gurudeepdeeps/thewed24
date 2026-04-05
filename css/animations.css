@@ -52,3 +52,35 @@
     background-color: var(--color-primary);
     transform: scale(0.5);
 }
+
+/* Premium Editorial Blur Reveal Animation */
+.reveal-in {
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(0.95);
+    transition: 
+        opacity 1.5s ease-out, 
+        filter 1.8s cubic-bezier(0.25, 1, 0.5, 1),
+        transform 1.8s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: opacity, transform, filter;
+}
+
+.reveal-in.visible {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+}
+
+/* Cinematic Stagger Delays - Slower, more 'authored' rhythm */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.25s; }
+.reveal-delay-3 { transition-delay: 0.4s; }
+.reveal-delay-4 { transition-delay: 0.55s; }
+.reveal-delay-5 { transition-delay: 0.7s; }
+.reveal-delay-6 { transition-delay: 0.85s; }
+.reveal-delay-7 { transition-delay: 1.0s; }
+.reveal-delay-8 { transition-delay: 1.15s; }
+.reveal-delay-9 { transition-delay: 1.3s; }
+.reveal-delay-10 { transition-delay: 1.45s; }
+.reveal-delay-11 { transition-delay: 1.6s; }
+.reveal-delay-12 { transition-delay: 1.75s; }

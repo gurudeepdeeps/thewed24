@@ -22,13 +22,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentPhotoIndex = 0;
     let currentAlbumTitle = '';
 
+    // Scroll to Top Logic
+    const scrollTopBtn = document.getElementById('scrollToTop');
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollTopBtn.style.opacity = '1';
+            scrollTopBtn.style.transform = 'translateY(0)';
+            scrollTopBtn.style.pointerEvents = 'auto';
+        } else {
+            scrollTopBtn.style.opacity = '0';
+            scrollTopBtn.style.transform = 'translateY(40px)';
+            scrollTopBtn.style.pointerEvents = 'none';
+        }
+    });
+
+    if (scrollTopBtn) {
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
     // Initial fetch of public albums
     async function fetchPublicAlbums() {
         try {
             const data = await getAlbums();
 
             albums = data;
-            renderAlbums(data);
+            
+            // NEW: Handle Separate Detail Page Mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedAlbumId = urlParams.get('id');
+
+            if (sharedAlbumId) {
+                renderDetailView(sharedAlbumId);
+            } else {
+                renderAlbums(data);
+            }
         } catch (err) {
             console.error('Fetch Public Albums ERROR', err);
             albumGrid.innerHTML = `<p class="col-span-full text-center opacity-50">FAILED TO LOAD COLLECTIONS</p>`;
@@ -54,17 +87,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             albumEl.className = 'album-item fade-in';
             const coverImage = album.cover_image_url ? `src="${album.cover_image_url}"` : '';
             albumEl.innerHTML = `
-                <div class="image-wrapper aspect-video bg-surface-container overflow-hidden relative group cursor-pointer" onclick="openAlbum('${album.id}')">
+                <div class="image-wrapper aspect-video bg-surface-container overflow-hidden relative group cursor-pointer" onclick="window.location.href='album?id=${album.id}'">
                     <img ${coverImage} 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 flex items-center justify-center">
-                        <span class="material-icons text-white opacity-0 group-hover:opacity-100 transition-opacity text-4xl">collections</span>
-                    </div>
                 </div>
                 <div class="mt-8">
                     <div class="flex items-center justify-between gap-6 flex-wrap">
-                        <h3 class="text-2xl italic font-serif">${album.title}</h3>
-                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap ml-auto" onclick="openAlbum('${album.id}')">View Full Album</button>
+                        <h3 class="text-2xl italic font-semibold font-serif text-primary">${album.title}</h3>
+                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap ml-auto" onclick="window.location.href='album?id=${album.id}'">View Full Album</button>
                     </div>
                     <p class="text-[10px] tracking-[0.3em] uppercase text-primary/60 mt-3">${date}</p>
                 </div>
@@ -76,24 +106,90 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Open an album and fetch its images
-    window.openAlbum = async (albumId) => {
+    async function renderDetailView(albumId) {
+        // Reset scroll to top when opening an album
+        window.scrollTo(0, 0);
+
+        const gridSection = document.getElementById('album-grid-section');
+        const detailView = document.getElementById('album-detail-view');
+        const detailGrid = document.getElementById('detail-image-grid');
+        const detailTitle = document.getElementById('detail-album-title');
+        const detailDate = document.getElementById('detail-album-date');
+        const headerSection = document.querySelector('.album-header');
+
+        // Toggle sections
+        if (gridSection) gridSection.style.display = 'none';
+        if (headerSection) headerSection.style.display = 'none';
+        if (detailView) detailView.style.display = 'block';
+
+        // Find album info
         const album = albums.find(a => a.id === albumId);
-        currentAlbumTitle = album ? album.title : 'Album Gallery';
-
-        try {
-            const data = await getAlbumImages(albumId);
-
-            if (data && data.length > 0) {
-                currentAlbumPhotos = data;
-                currentPhotoIndex = 0;
-                showLightbox();
-            } else {
-                alert("This album has no images yet.");
-            }
-        } catch (err) {
-            console.error('Fetch Album Images ERROR', err);
+        if (album) {
+            detailTitle.innerText = album.title;
+            const formattedDate = new Date(album.event_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            detailDate.innerText = formattedDate;
         }
+
+        // Fetch and render images
+        try {
+            detailGrid.innerHTML = `
+                <div class="col-span-full py-40 text-center flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-8"></div>
+                </div>`;
+
+            const images = await getAlbumImages(albumId);
+            detailGrid.innerHTML = '';
+
+            if (!images || images.length === 0) {
+                detailGrid.innerHTML = `<p class="col-span-full text-center opacity-30 py-20">No images in this collection yet.</p>`;
+                return;
+            }
+
+            images.forEach((img, index) => {
+                const imgWrapper = document.createElement('div');
+                const staggerClass = index < 12 ? `reveal-delay-${index + 1}` : '';
+                
+                imgWrapper.className = `reveal-in mb-[58px] inline-block w-full ${staggerClass}`;
+                imgWrapper.style.breakInside = 'avoid';
+                imgWrapper.style.marginBottom = '58px';
+                
+                imgWrapper.innerHTML = `
+                    <div class="cursor-pointer" onclick="openLightboxAt(${index})">
+                        <img src="${img.image_url}" alt="Wedding Photograph" class="w-full h-auto shadow-sm hover:shadow-2xl transition-all duration-700 cursor-zoom-in">
+                    </div>
+                `;
+                
+                detailGrid.appendChild(imgWrapper);
+                
+                // Tiny timeout to ensure the browser has time to register the element before animating
+                requestAnimationFrame(() => {
+                    setTimeout(() => imgWrapper.classList.add('visible'), 50);
+                });
+            });
+
+            // Keep reference for lightbox if user still clicks an image
+            currentAlbumPhotos = images;
+            currentAlbumTitle = album ? album.title : 'Album Gallery';
+
+        } catch (err) {
+            console.error('Render Detail View ERROR', err);
+            detailGrid.innerHTML = `<p class="col-span-full text-center opacity-50 py-20">FAILED TO LOAD IMAGES</p>`;
+        }
+    }
+
+    // Helper for lightbox on separate page
+    window.openLightboxAt = (index) => {
+        currentPhotoIndex = index;
+        showLightbox();
+    };
+
+    // Keep existing openAlbum for compatibility or quick look
+    window.openAlbum = async (albumId) => {
+        window.location.href = `album?id=${albumId}`;
     };
 
     function showLightbox() {

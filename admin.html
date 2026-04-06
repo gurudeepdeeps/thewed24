@@ -56,6 +56,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="#prewedding" class="nav-link" data-target="prewedding">
+                        <span class="material-icons">auto_awesome</span>
+                        <span>PRE-WEDDING</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="#about" class="nav-link" data-target="about">
                         <span class="material-icons">person</span>
                         <span>ABOUT PAGE</span>
@@ -132,6 +138,10 @@
                     <div class="stat-card">
                         <div class="stat-label">CLIENT ALBUMS</div>
                         <div id="statTotalAlbums" class="stat-value">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">PRE-WEDDING ALBUMS</div>
+                        <div id="statTotalPrewedding" class="stat-value">--</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">PENDING INQUIRIES</div>
@@ -252,6 +262,38 @@
                     <button id="loadMoreAlbumsBtn" class="btn btn-outline"
                         style="border: 1px solid var(--color-outline); background: transparent; padding-left: 3rem; padding-right: 3rem;">LOAD
                         MORE ALBUMS</button>
+                </div>
+            </section>
+
+            <!-- Pre-Wedding Albums Manager View -->
+            <section id="view-prewedding" class="admin-view" style="display: none;">
+                <div class="view-header flex justify-between items-end mb-8">
+                    <div>
+                        <h1 class="view-title">Pre-Wedding Albums</h1>
+                        <nav class="admin-tabs" id="preweddingFilterTabs">
+                            <a href="#" class="tab-link active" data-filter="ALL">ALL PRE-WEDDING</a>
+                        </nav>
+                    </div>
+                    <button class="btn btn-primary flex items-center gap-2" id="createPreweddingBtn"
+                        style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
+                            class="material-icons text-sm">add</span> UPLOAD PRE-WEDDING</button>
+                </div>
+
+                <div class="table-actions flex justify-between items-center mb-6 px-4">
+                    <div class="flex gap-6 items-center">
+                        <button id="deleteSelectedPreweddingBtn" class="btn btn-outline flex items-center gap-2"
+                            style="display: none; border-color: var(--color-error); color: var(--color-error); padding: 0.5rem 1.5rem; background: transparent;">
+                            <span class="material-icons text-sm">delete</span>
+                            <span>DELETE SELECTED (<span id="selectedPreweddingCount">0</span>)</span>
+                        </button>
+                    </div>
+                    <div class="text-xs tracking-widest uppercase opacity-100">
+                        SHOWING PRE-WEDDING ALBUMS
+                    </div>
+                </div>
+
+                <div class="film-list flex flex-col gap-4" id="preweddingList">
+                    <!-- Dynamic Pre-Wedding Albums Will Load Here -->
                 </div>
             </section>
 
@@ -514,6 +556,18 @@
                             in Selected Works on Home Page (Max 4)</span>
                     </label>
                 </div>
+
+                <div id="filmFeaturedOrderWrap" class="form-group mb-6 hidden">
+                    <label class="form-label">Featured Order (1-4)</label>
+                    <select id="addFilmFeaturedOrder" class="form-input" style="appearance: none;">
+                        <option value="" selected>Select order</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    <div class="mt-2 text-[10px] tracking-widest uppercase opacity-40">Controls the display order on the home page</div>
+                </div>
                 <div class="form-group">
                         <label class="form-label">
                             YOUTUBE VIDEO URL
@@ -548,29 +602,20 @@
 
             <form id="newAlbumForm" class="text-left">
                 <div class="form-group">
-                    <label class="form-label">Album Title *</label>
-                    <input type="text" id="addAlbumTitle" class="form-input" required
-                        placeholder="e.g. The Royal Heritage">
+                    <label class="form-label">Album Title / Client Name *</label>
+                    <input type="text" id="addAlbumTitleClient" class="form-input" required
+                        placeholder="e.g. Priyanka & Rahul | The Royal Heritage">
+                    <div class="mt-2 text-[10px] tracking-widest uppercase opacity-40">Tip: you can enter just one name, or use “Client | Album” format</div>
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label class="form-label">Client Name *</label>
-                        <input type="text" id="addAlbumClient" class="form-input" required
-                            placeholder="e.g. Priyanka & Rahul">
-                    </div>
                     <div class="form-group">
                         <label class="form-label">Category *</label>
                         <select id="addAlbumCategory" class="form-input" required style="appearance: none;">
                             <option value="WEDDING">WEDDING</option>
-                            <option value="ENGAGEMENT">ENGAGEMENT</option>
+                            <option value="ENGAGEMENT">PRE-WEDDING</option>
                             <option value="COMMERCIAL">COMMERCIAL</option>
                         </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-group">
-                        <label class="form-label">Event Date</label>
-                        <input type="date" id="addAlbumDate" class="form-input">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Access Level</label>
@@ -580,6 +625,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label class="form-label">Cover Image</label>
                     <input type="file" id="addAlbumCover" class="form-input" accept="image/*">
@@ -697,6 +743,21 @@
                 <input type="file" id="uploadAlbumPhotos" class="form-input" multiple accept="image/*">
                 <div id="photosUploadStatus" class="text-xs text-primary tracking-widest uppercase mt-4 text-center"
                     style="display: none;"></div>
+            </div>
+
+            <div id="manageCoverPageRow" class="mb-8 p-6 border border-outline rounded-sm bg-white/5 flex items-center justify-between gap-6">
+                <div class="flex items-center gap-5">
+                    <div id="manageCoverPageThumb" class="w-20 h-20 border border-outline bg-black/20 overflow-hidden flex items-center justify-center">
+                        <span class="material-icons text-white/40">photo</span>
+                    </div>
+                    <div>
+                        <div class="text-[10px] tracking-widest uppercase opacity-60 mb-2">Cover Page</div>
+                        <div id="manageCoverPageText" class="text-xs opacity-80">Not set</div>
+                        <div class="text-[10px] tracking-widest uppercase opacity-40 mt-2">Tip: click “Set Cover” on an image below</div>
+                    </div>
+                </div>
+                <button type="button" id="clearCoverPageBtn" class="btn btn-outline"
+                    style="border: 1px solid var(--color-outline); background: transparent; padding: 0.5rem 1.5rem; display: none;">CLEAR</button>
             </div>
 
             <div id="albumImagesGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4">

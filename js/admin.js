@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                              <div class="flex items-center gap-2">
                                 <h3 class="font-medium text-lg ${film.status === 'DRAFT' ? 'opacity-50' : ''}">${film.title}</h3>
                                 ${film.is_selected_work ? '<span class="material-icons text-primary text-sm" title="Featured on Home Page">stars</span>' : ''}
+                                ${film.is_selected_work ? `<span class="text-[10px] tracking-widest uppercase px-2 py-1 border border-primary/30 text-primary/80" style="border-radius: 999px;" title="Featured Order">#${film.selected_work_order || '-'}</span>` : ''}
                             </div>
                         </div>
 
@@ -266,6 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.albumsMap = {};
     let editingAlbumId = null;
     let currentManagingAlbumId = null;
+    let currentAlbumModalMode = 'ALBUM'; // 'ALBUM' | 'PREWEDDING'
 
     // --- SUPABASE TESTIMONIALS INTEGRATION ---
     let currentTestimonialsFilter = 'PUBLISHED';
@@ -310,8 +312,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 2. Total Count
             const countSnap = await getCountFromServer(albumsRef);
             const totalCount = countSnap.data().count;
-            const aStat = document.getElementById('statTotalAlbums');
-            if (aStat) aStat.innerHTML = `${totalCount}`;
+
+            if (reset) {
+                // Dashboard stats: split Albums vs Pre-Wedding
+                let preweddingCount = 0;
+                try {
+                    const preweddingSnap = await getCountFromServer(query(albumsRef, where("category", "==", "ENGAGEMENT")));
+                    preweddingCount = preweddingSnap.data().count || 0;
+                } catch (e) {
+                    console.warn("Failed to count pre-wedding albums:", e);
+                }
+
+                const clientAlbumsCount = Math.max(0, totalCount - preweddingCount);
+                const aStat = document.getElementById('statTotalAlbums');
+                if (aStat) aStat.innerHTML = `${clientAlbumsCount}`;
+
+                const pwStat = document.getElementById('statTotalPrewedding');
+                if (pwStat) pwStat.innerHTML = `${preweddingCount}`;
+            }
 
             if (reset && albums.length === 0) {
                 listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">NO ALBUMS IN DB</div>';
@@ -321,15 +339,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // 3. Render
             let html = '';
-            albums.forEach(album => {
+            const albumsToRender = albums.filter(a => a.category !== 'ENGAGEMENT');
+
+            if (reset && albumsToRender.length === 0) {
+                listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">NO ALBUMS IN DB</div>';
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            albumsToRender.forEach(album => {
                 window.albumsMap[album.id] = album;
-                let dateStr = 'N/A';
-                const dateVal = album.event_date || album.created_at;
-                if (dateVal && dateVal.toDate) {
-                    const start = dateVal.toDate();
-                    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-                    dateStr = `${months[start.getMonth()]}<br>${String(start.getDate()).padStart(2, '0')},<br>${start.getFullYear()}`;
-                }
 
                 html += `
                     <div class="film-card fade-in">
@@ -362,10 +381,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <span class="material-icons text-sm opacity-100">${album.access_level === 'PRIVATE' ? 'lock' : 'public'}</span> 
                                 ${album.access_level}
                             </div>
-                        </div>
-
-                        <div class="film-date text-xs opacity-100 tracking-widest w-24">
-                            ${dateStr}
                         </div>
 
                         <div class="film-actions flex gap-4 ml-auto">
@@ -411,6 +426,110 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listContainer.innerHTML = `<div class="text-error text-center py-8">FAILED TO LOAD: ${err.message}</div>`;
             }
         }
+    }
+
+    async function fetchPreweddingAlbums() {
+        const listContainer = document.getElementById('preweddingList');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">LOADING PRE-WEDDING...</div>';
+
+        try {
+            const q = query(collection(db, "albums"), where("category", "==", "ENGAGEMENT"));
+            const querySnapshot = await getDocs(q);
+            const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Local sort to avoid composite index requirements
+            albums.sort((a, b) => {
+                const timeA = a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
+                const timeB = b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
+                return timeB - timeA;
+            });
+
+            logBackend('Fetch Pre-Wedding Albums', 'SUCCESS', `Loaded ${albums.length} pre-wedding albums`);
+
+            if (albums.length === 0) {
+                listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">NO PRE-WEDDING ALBUMS IN DB</div>';
+                return;
+            }
+
+            let html = '';
+            albums.forEach(album => {
+                window.albumsMap[album.id] = album;
+
+                html += `
+                    <div class="film-card fade-in">
+                        <div class="drag-handle">
+                            <input type="checkbox" class="prewedding-bulk-checkbox" value="${album.id}" style="accent-color: var(--color-primary); cursor: pointer; transform: scale(1.2);">
+                        </div>
+                        <img src="${album.cover_image_url || 'assets/cinematic-frame.jpg'}" class="film-thumb">
+
+                        <div class="film-info">
+                            <div class="text-[10px] text-primary tracking-widest uppercase mb-1">ALBUM</div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-medium text-lg">${album.title}</h3>
+                                ${album.is_selected_home ? '<span class="material-icons text-primary text-sm" title="Featured on Home Page">stars</span>' : ''}
+                            </div>
+                        </div>
+
+                        <div class="film-couple">
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-1">CLIENT</div>
+                            <div>${album.client_name || '-'}</div>
+                        </div>
+
+                        <div class="film-category w-32">
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-2">PHOTOS</div>
+                            <div class="tracking-widest">${album.photo_count || 0} <span class="material-icons text-primary text-xs ml-1">photo</span></div>
+                        </div>
+
+                        <div class="film-status w-32">
+                            <div class="text-[10px] opacity-100 tracking-widest uppercase mb-2">ACCESS</div>
+                            <div class="flex items-center gap-2 text-xs tracking-widest uppercase">
+                                <span class="material-icons text-sm opacity-100">${album.access_level === 'PRIVATE' ? 'lock' : 'public'}</span>
+                                ${album.access_level || 'PRIVATE'}
+                            </div>
+                        </div>
+
+                        <div class="film-actions flex gap-4 ml-auto">
+                            <button class="icon-btn-small" onclick="manageAlbumImages('${album.id}', event)" title="Manage images"><span class="material-icons text-sm hover:text-primary transition-colors">photo_library</span></button>
+                            <button class="icon-btn-small" onclick="editAlbum('${album.id}', event)" title="Edit album details"><span class="material-icons text-sm hover:text-primary transition-colors">edit</span></button>
+                            <button class="icon-btn-small" onclick="deleteAlbum('${album.id}', event)" title="Delete album"><span class="material-icons text-sm text-error hover:text-error transition-colors">delete</span></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+            setTimeout(() => {
+                listContainer.querySelectorAll('.fade-in:not(.visible)').forEach(c => c.classList.add('visible'));
+            }, 50);
+
+        } catch (err) {
+            logBackend('Fetch Pre-Wedding Albums', 'ERROR', 'Failed to load pre-wedding albums', err);
+            listContainer.innerHTML = `<div class="text-error text-center py-8">FAILED TO LOAD: ${err.message}</div>`;
+        }
+    }
+
+    function setAlbumCategoryLock(isLocked, forcedValue = null, mode = null) {
+        const select = document.getElementById('addAlbumCategory');
+        if (!select) return;
+
+        const preweddingOpt = select.querySelector('option[value="ENGAGEMENT"]');
+        if (mode && preweddingOpt) {
+            if (mode === 'ALBUM') {
+                preweddingOpt.hidden = true;
+                if (select.value === 'ENGAGEMENT') {
+                    select.value = forcedValue || 'WEDDING';
+                }
+            } else if (mode === 'PREWEDDING') {
+                preweddingOpt.hidden = false;
+            }
+        }
+
+        if (forcedValue) select.value = forcedValue;
+        select.disabled = !!isLocked;
+        select.style.opacity = isLocked ? '0.6' : '1';
+        select.style.cursor = isLocked ? 'not-allowed' : '';
     }
 
 
@@ -614,16 +733,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         createAlbumBtn.addEventListener('click', (e) => {
             e.preventDefault();
             editingAlbumId = null;
+            currentAlbumModalMode = 'ALBUM';
             document.getElementById('albumModalTitle').innerText = 'Create New Album';
             document.getElementById('saveAlbumBtn').innerText = 'CREATE ALBUM';
             document.getElementById('newAlbumForm').reset();
             document.getElementById('currentAlbumCoverPreview').classList.add('hidden');
+            setAlbumCategoryLock(false, 'WEDDING', 'ALBUM');
 
             const modal = document.getElementById('addAlbumModal');
             if (modal) {
                 modal.style.display = 'flex';
                 setTimeout(() => modal.classList.add('active'), 50);
             }
+        });
+    }
+
+    // Create Pre-Wedding Button
+    const createPreweddingBtn = document.getElementById('createPreweddingBtn');
+    if (createPreweddingBtn) {
+        createPreweddingBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            editingAlbumId = null;
+            currentAlbumModalMode = 'PREWEDDING';
+            document.getElementById('albumModalTitle').innerText = 'Upload Pre-Wedding Album';
+            document.getElementById('saveAlbumBtn').innerText = 'CREATE ALBUM';
+            document.getElementById('newAlbumForm').reset();
+            document.getElementById('currentAlbumCoverPreview').classList.add('hidden');
+            const accessSel = document.getElementById('addAlbumAccess');
+            if (accessSel) accessSel.value = 'PUBLIC';
+
+            const modal = document.getElementById('addAlbumModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 50);
+            }
+
+            // Ensure category defaults to PRE-WEDDING for this flow (even after form reset/animation)
+            setAlbumCategoryLock(true, 'ENGAGEMENT', 'PREWEDDING');
+            setTimeout(() => {
+                setAlbumCategoryLock(true, 'ENGAGEMENT', 'PREWEDDING');
+                const accessSel2 = document.getElementById('addAlbumAccess');
+                if (accessSel2) accessSel2.value = 'PUBLIC';
+            }, 0);
         });
     }
 
@@ -638,6 +789,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             setTimeout(() => {
                 addAlbumModal.style.display = 'none';
                 if (newAlbumForm) newAlbumForm.reset();
+                currentAlbumModalMode = 'ALBUM';
+                setAlbumCategoryLock(false, 'WEDDING', 'ALBUM');
                 const selectedCheckbox = document.getElementById('addAlbumSelected');
                 if (selectedCheckbox) selectedCheckbox.checked = false;
                 const statusMsg = document.getElementById('albumUploadStatusMsg');
@@ -659,15 +812,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             const saveBtn = document.getElementById('saveAlbumBtn');
             const statusMsg = document.getElementById('albumUploadStatusMsg');
 
-            const title = document.getElementById('addAlbumTitle').value;
-            const client_name = document.getElementById('addAlbumClient').value;
-            const category = document.getElementById('addAlbumCategory').value;
-            const event_date = document.getElementById('addAlbumDate').value;
+            const titleClientRaw = document.getElementById('addAlbumTitleClient').value;
+            const category = currentAlbumModalMode === 'PREWEDDING' ? 'ENGAGEMENT' : document.getElementById('addAlbumCategory').value;
             const access_level = document.getElementById('addAlbumAccess').value;
             const isFeatured = document.getElementById('addAlbumSelected')?.checked || false;
             const coverFileInput = document.getElementById('addAlbumCover');
 
             try {
+                const parseTitleClient = (raw) => {
+                    const value = (raw || '').trim();
+                    if (!value) return { title: '', client_name: '' };
+
+                    // Preferred delimiter: Client | Album Title
+                    if (value.includes('|')) {
+                        const idx = value.indexOf('|');
+                        const left = value.slice(0, idx).trim();
+                        const right = value.slice(idx + 1).trim();
+                        if (left && right) return { client_name: left, title: right };
+                    }
+
+                    // Secondary delimiters with spaces to avoid splitting normal hyphenated titles
+                    const spacedDelims = [' — ', ' - ', ' – ', ' / '];
+                    for (const delim of spacedDelims) {
+                        if (value.includes(delim)) {
+                            const idx = value.indexOf(delim);
+                            const left = value.slice(0, idx).trim();
+                            const right = value.slice(idx + delim.length).trim();
+                            if (left && right) return { client_name: left, title: right };
+                        }
+                    }
+
+                    // If user entered a single name, store it for both fields (keeps compatibility across UI)
+                    return { client_name: value, title: value };
+                };
+
+                const { title, client_name } = parseTitleClient(titleClientRaw);
+                if (!title) throw new Error('Album Title / Client Name is required.');
+
                 // Limit Check for featured albums
                 if (isFeatured) {
                     const q = query(collection(db, "albums"), where("is_selected_home", "==", true));
@@ -708,7 +889,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     title,
                     client_name,
                     category,
-                    event_date: event_date || null,
                     access_level,
                     is_selected_home: isFeatured,
                     cover_image_url: coverUrl,
@@ -800,6 +980,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         fetchAlbumImages(id);
     }
 
+    async function getAlbumForManage(albumId) {
+        try {
+            const snap = await getDoc(doc(db, "albums", albumId));
+            if (snap.exists()) {
+                const data = { id: albumId, ...snap.data() };
+                window.albumsMap[albumId] = data;
+                return data;
+            }
+        } catch (err) {
+            console.warn("Failed to load album for manage view:", err);
+        }
+        return window.albumsMap[albumId] || null;
+    }
+
+    function updateManageCoverPageRow(album) {
+        const thumb = document.getElementById('manageCoverPageThumb');
+        const text = document.getElementById('manageCoverPageText');
+        const clearBtn = document.getElementById('clearCoverPageBtn');
+        if (!thumb || !text || !clearBtn) return;
+
+        const url = album?.cover_page_image_url || null;
+        if (url) {
+            thumb.innerHTML = `<img src="${url}" alt="Cover Page" class="w-full h-full object-cover">`;
+            text.innerHTML = `Set <a href="${url}" target="_blank" class="text-primary hover:underline ml-2">View</a>`;
+            clearBtn.style.display = 'inline-flex';
+        } else {
+            thumb.innerHTML = `<span class="material-icons text-white/40">photo</span>`;
+            text.textContent = 'Not set';
+            clearBtn.style.display = 'none';
+        }
+    }
+
     async function fetchAlbumImages(albumId) {
         const grid = document.getElementById('albumImagesGrid');
         if (!grid) return;
@@ -807,6 +1019,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         grid.innerHTML = '<div class="col-span-full opacity-50 text-center py-8 tracking-widest uppercase text-xs">LOADING PHOTOS...</div>';
 
         try {
+            const album = await getAlbumForManage(albumId);
+            updateManageCoverPageRow(album);
+            const coverPageId = album?.cover_page_image_id || null;
+            const coverPageUrl = album?.cover_page_image_url || null;
+
             const q = query(collection(db, "album_images"), where("album_id", "==", albumId), orderBy("order_index", "asc"));
             const querySnapshot = await getDocs(q);
             const images = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -823,9 +1040,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let html = '';
             images.forEach(img => {
+                const isCoverPage = (coverPageId && img.id === coverPageId) || (!coverPageId && coverPageUrl && img.image_url === coverPageUrl);
                 html += `
-                    <div class="relative group aspect-square bg-surface-lowest overflow-hidden border border-outline">
+                    <div class="relative group aspect-square bg-surface-lowest overflow-hidden border border-outline" style="${isCoverPage ? 'outline: 2px solid var(--color-primary); outline-offset: -2px;' : ''}">
                         <img src="${img.image_url}" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                        ${isCoverPage ? `
+                            <div class="absolute top-2 left-2 px-2 py-1 text-[10px] tracking-widest uppercase bg-primary text-white" style="border-radius: 999px;">
+                                Cover Page
+                            </div>
+                        ` : ''}
+                        <button onclick="setAlbumCoverPage('${albumId}', '${img.id}', '${encodeURIComponent(img.image_url)}', event)"
+                            class="absolute bottom-2 left-2 px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            style="background: rgba(0,0,0,0.65); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px;">
+                            <span class="material-icons" style="font-size: 14px; vertical-align: middle;">${isCoverPage ? 'check_circle' : 'photo_filter'}</span>
+                            <span class="ml-2 text-[10px] tracking-widest uppercase">${isCoverPage ? 'Cover' : 'Set Cover'}</span>
+                        </button>
                         <button onclick="deleteAlbumImage('${img.id}', event)" class="absolute top-2 right-2 p-1.5 bg-error text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
                             <span class="material-icons text-xs">delete</span>
                         </button>
@@ -837,6 +1066,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             logBackend('Fetch Album Images', 'ERROR', `Failed to load images for album ${albumId}`, err);
             grid.innerHTML = `<div class="col-span-full text-error text-center py-8 text-xs uppercase">ERROR: ${err.message}</div>`;
+        }
+    }
+
+    window.setAlbumCoverPage = async function (albumId, imageId, encodedUrl, event) {
+        if (event) event.stopPropagation();
+        if (!albumId) albumId = currentManagingAlbumId;
+        if (!albumId || !imageId) return;
+
+        const imageUrl = decodeURIComponent(encodedUrl || '');
+
+        try {
+            const album = await getAlbumForManage(albumId);
+            const alreadyCover = (album?.cover_page_image_id && album.cover_page_image_id === imageId) ||
+                (album?.cover_page_image_url && album.cover_page_image_url === imageUrl);
+
+            const updates = alreadyCover
+                ? { cover_page_image_id: null, cover_page_image_url: null, updated_at: new Date().toISOString() }
+                : { cover_page_image_id: imageId, cover_page_image_url: imageUrl, updated_at: new Date().toISOString() };
+
+            await updateDoc(doc(db, "albums", albumId), updates);
+            window.albumsMap[albumId] = { ...(window.albumsMap[albumId] || { id: albumId }), ...updates };
+            updateManageCoverPageRow(window.albumsMap[albumId]);
+
+            logBackend('Set Album Cover Page', 'SUCCESS', `${alreadyCover ? 'Cleared' : 'Set'} cover page for album ${albumId}`);
+
+            fetchAlbumImages(albumId);
+            fetchAlbums(true);
+        } catch (err) {
+            logBackend('Set Album Cover Page', 'ERROR', `Failed to set cover page for album ${albumId}`, err);
+            alert('Failed to update cover page: ' + (err.message || 'Unknown error'));
         }
     }
 
@@ -903,6 +1162,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const storageRef = ref(storage, imgData.storage_path);
                     await deleteObject(storageRef).catch(e => console.warn("Storage deletion failed, record will still be removed", e));
                 }
+
+                // If this was the cover page, clear it on the album doc
+                if (imgData.album_id) {
+                    const album = await getAlbumForManage(imgData.album_id);
+                    const matchesCover = (album?.cover_page_image_id && album.cover_page_image_id === id) ||
+                        (album?.cover_page_image_url && imgData.image_url && album.cover_page_image_url === imgData.image_url);
+                    if (matchesCover) {
+                        const updates = { cover_page_image_id: null, cover_page_image_url: null, updated_at: new Date().toISOString() };
+                        await updateDoc(doc(db, "albums", imgData.album_id), updates);
+                        window.albumsMap[imgData.album_id] = { ...(window.albumsMap[imgData.album_id] || { id: imgData.album_id }), ...updates };
+                        if (imgData.album_id === currentManagingAlbumId) {
+                            updateManageCoverPageRow(window.albumsMap[imgData.album_id]);
+                        }
+                    }
+                }
             }
 
             // 2. Delete from Firestore
@@ -921,6 +1195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const manageImagesModal = document.getElementById('manageImagesModal');
     const closeManageImagesBtn = document.getElementById('closeManageImagesBtn');
     const doneManageImagesBtn = document.getElementById('doneManageImagesBtn');
+    const clearCoverPageBtn = document.getElementById('clearCoverPageBtn');
 
     if (closeManageImagesBtn) closeManageImagesBtn.onclick = () => {
         manageImagesModal.classList.remove('active');
@@ -930,6 +1205,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         manageImagesModal.classList.remove('active');
         setTimeout(() => manageImagesModal.style.display = 'none', 300);
     };
+    if (clearCoverPageBtn) clearCoverPageBtn.onclick = async (event) => {
+        if (event) event.preventDefault();
+        if (!currentManagingAlbumId) return;
+        if (!confirm('Clear cover page for this album?')) return;
+
+        try {
+            const updates = { cover_page_image_id: null, cover_page_image_url: null, updated_at: new Date().toISOString() };
+            await updateDoc(doc(db, "albums", currentManagingAlbumId), updates);
+            window.albumsMap[currentManagingAlbumId] = { ...(window.albumsMap[currentManagingAlbumId] || { id: currentManagingAlbumId }), ...updates };
+            updateManageCoverPageRow(window.albumsMap[currentManagingAlbumId]);
+            fetchAlbumImages(currentManagingAlbumId);
+            fetchAlbums(true);
+        } catch (err) {
+            logBackend('Clear Album Cover Page', 'ERROR', `Failed to clear cover page for album ${currentManagingAlbumId}`, err);
+            alert('Failed to clear cover page: ' + (err.message || 'Unknown error'));
+        }
+    };
 
     // Global edit album
     window.editAlbum = function (id, event) {
@@ -938,13 +1230,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!album) return;
 
         editingAlbumId = id;
-        document.getElementById('albumModalTitle').innerText = 'Edit Album Details';
+        currentAlbumModalMode = album.category === 'ENGAGEMENT' ? 'PREWEDDING' : 'ALBUM';
+        document.getElementById('albumModalTitle').innerText = album.category === 'ENGAGEMENT' ? 'Edit Pre-Wedding Album' : 'Edit Album Details';
         document.getElementById('saveAlbumBtn').innerText = 'SAVE CHANGES';
 
-        document.getElementById('addAlbumTitle').value = album.title;
-        document.getElementById('addAlbumClient').value = album.client_name;
+        const combinedInput = document.getElementById('addAlbumTitleClient');
+        if (combinedInput) {
+            const t = (album.title || '').trim();
+            const c = (album.client_name || '').trim();
+            combinedInput.value = (t && c && t !== c) ? `${c} | ${t}` : (t || c);
+        }
         document.getElementById('addAlbumCategory').value = album.category || 'WEDDING';
-        document.getElementById('addAlbumDate').value = album.event_date || '';
+        setAlbumCategoryLock(album.category === 'ENGAGEMENT', album.category || 'WEDDING', album.category === 'ENGAGEMENT' ? 'PREWEDDING' : 'ALBUM');
         document.getElementById('addAlbumAccess').value = album.access_level || 'PRIVATE';
         
         const selectedCheckbox = document.getElementById('addAlbumSelected');
@@ -1217,6 +1514,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const btnEl = document.getElementById('saveFilmBtn');
             if (btnEl) btnEl.innerText = 'SAVE FILM';
 
+            const featuredWrap = document.getElementById('filmFeaturedOrderWrap');
+            const featuredOrder = document.getElementById('addFilmFeaturedOrder');
+            if (featuredWrap) featuredWrap.classList.add('hidden');
+            if (featuredOrder) featuredOrder.value = '';
+
             // Clear HTML previews implicitly
             const modal = document.getElementById('addFilmModal');
             if (modal) {
@@ -1246,6 +1548,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectedCheckbox = document.getElementById('addFilmSelected');
         if (selectedCheckbox) {
             selectedCheckbox.checked = film.is_selected_work || false;
+        }
+
+        const featuredWrap = document.getElementById('filmFeaturedOrderWrap');
+        const featuredOrder = document.getElementById('addFilmFeaturedOrder');
+        if ((film.is_selected_work || false) && featuredWrap) {
+            featuredWrap.classList.remove('hidden');
+        } else if (featuredWrap) {
+            featuredWrap.classList.add('hidden');
+        }
+        if (featuredOrder) {
+            featuredOrder.value = (film.selected_work_order != null) ? String(film.selected_work_order) : '';
         }
         // File inputs cannot be pre-filled due to browser security
 
@@ -1305,6 +1618,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Reset select explicitly if needed or rely on reset()
                 const selectedCheckbox = document.getElementById('addFilmSelected');
                 if (selectedCheckbox) selectedCheckbox.checked = false;
+                const featuredWrap = document.getElementById('filmFeaturedOrderWrap');
+                const featuredOrder = document.getElementById('addFilmFeaturedOrder');
+                if (featuredWrap) featuredWrap.classList.add('hidden');
+                if (featuredOrder) featuredOrder.value = '';
 
                 // Explicitly clear additional fields if reset() misses them (though it shouldn't)
                 ['addFilmTitle', 'addFilmVideoUrl'].forEach(id => {
@@ -1323,6 +1640,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (closeFilmModalBtn) closeFilmModalBtn.addEventListener('click', closeAddFilmModal);
     if (cancelFilmBtn) cancelFilmBtn.addEventListener('click', closeAddFilmModal);
+
+    // Featured order UI toggle
+    const addFilmSelected = document.getElementById('addFilmSelected');
+    const featuredWrap = document.getElementById('filmFeaturedOrderWrap');
+    const featuredOrder = document.getElementById('addFilmFeaturedOrder');
+    if (addFilmSelected) {
+        addFilmSelected.addEventListener('change', () => {
+            if (addFilmSelected.checked) {
+                if (featuredWrap) featuredWrap.classList.remove('hidden');
+            } else {
+                if (featuredWrap) featuredWrap.classList.add('hidden');
+                if (featuredOrder) featuredOrder.value = '';
+            }
+        });
+    }
 
     // Youtube Preview Logic
     const filmVideoUrlInput = document.getElementById('addFilmVideoUrl');
@@ -1374,22 +1706,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             const category = document.getElementById('addFilmCategory').value.trim();
             const status = document.getElementById('addFilmStatus').value;
             const isFeatured = document.getElementById('addFilmSelected').checked;
+            const featuredOrderRaw = document.getElementById('addFilmFeaturedOrder')?.value || '';
             const videoUrlInput = document.getElementById('addFilmVideoUrl');
 
             try {
-                // Limit Check for featured films
-                if (isFeatured) {
-                    const q = query(collection(db, "films"), where("is_selected_work", "==", true));
-                    const snapshot = await getCountFromServer(q);
-                    let count = snapshot.data().count;
+                const featuredOrder = featuredOrderRaw ? Number(featuredOrderRaw) : null;
 
-                    // If editing, and it was already featured, count is effectively one less
-                    if (editingFilmId && window.filmsMap[editingFilmId].is_selected_work) {
-                        count--;
+                // Limit + Order Check for featured films
+                if (isFeatured) {
+                    if (!featuredOrder || Number.isNaN(featuredOrder) || featuredOrder < 1 || featuredOrder > 4) {
+                        throw new Error('Please select a Featured Order between 1 and 4.');
                     }
 
-                    if (count >= 4) {
+                    const featuredSnap = await getDocs(query(collection(db, "films"), where("is_selected_work", "==", true)));
+                    const featuredFilms = featuredSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    const featuredWithoutSelf = featuredFilms.filter(f => !editingFilmId || f.id !== editingFilmId);
+
+                    if (featuredWithoutSelf.length >= 4) {
                         throw new Error(`You can only feature a maximum of 4 films. Please unfeature another film first.`);
+                    }
+
+                    const conflict = featuredWithoutSelf.find(f => Number(f.selected_work_order) === featuredOrder);
+                    if (conflict) {
+                        throw new Error(`Featured Order ${featuredOrder} is already used by another film. Choose a different order.`);
                     }
                 }
 
@@ -1416,6 +1755,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     category,
                     status,
                     is_selected_work: isFeatured,
+                    selected_work_order: isFeatured ? featuredOrder : null,
                     cover_image_url: coverImageUrl,
                     video_url: videoUrl,
                     updated_at: new Date().toISOString()
@@ -1451,6 +1791,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         'dashboard': 'KIRANA A N | <span class="tracking-widest font-sans text-sm font-medium">ADMIN</span>',
         'films': 'FILMS MANAGER',
         'albums': 'CLIENT ALBUMS MANAGER',
+        'prewedding': 'PRE-WEDDING ALBUMS MANAGER',
         'packages': 'PACKAGES MANAGER',
         'about': 'ABOUT PAGE MANAGER',
         'testimonials': 'TESTIMONIALS MANAGER',
@@ -1493,7 +1834,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Show/Hide search bar based on view
             if (searchBar) {
-                if (targetId === 'films' || targetId === 'albums') {
+                if (targetId === 'films' || targetId === 'albums' || targetId === 'prewedding') {
                     searchBar.style.display = 'flex';
                     const input = searchBar.querySelector('input');
                     if (input) input.placeholder = `Search ${targetId}...`;
@@ -1507,6 +1848,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fetchFilms(true);
             } else if (targetId === 'albums') {
                 fetchAlbums(true);
+            } else if (targetId === 'prewedding') {
+                fetchPreweddingAlbums();
             } else if (targetId === 'testimonials') {
                 fetchTestimonials(true);
             } else if (targetId === 'packages') {
@@ -1581,6 +1924,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         '#signOutBtn', '#topbarLogoutBtn', '#deleteSelectedBtn',
         '#createAlbumBtn', '#saveAlbumBtn', '#cancelAlbumBtn',
         '#closeAlbumModalBtn', '#loadMoreAlbumsBtn', '#deleteSelectedAlbumsBtn',
+        '#createPreweddingBtn', '#deleteSelectedPreweddingBtn',
         '#doneManageImagesBtn', '#closeManageImagesBtn',
         '#addTestimonialBtn', '#saveTestiBtn', '#cancelTestiBtn',
         '#addPackageBtn', '#savePkgBtn', '#cancelPkgBtn', '#closePackageModalBtn',

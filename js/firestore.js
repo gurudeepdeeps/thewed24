@@ -21,19 +21,26 @@ export async function getFilms() {
  */
 export async function getFeaturedFilms() {
     try {
-        const q = query(
-            collection(db, "films"), 
-            where("is_selected_work", "==", true),
-            where("status", "==", "PUBLISHED")
-        );
+        // Query on a single field to avoid composite-index requirements.
+        const q = query(collection(db, "films"), where("is_selected_work", "==", true));
         const querySnapshot = await getDocs(q);
-        const films = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // Local sort to avoid composite index requirement
+        const films = querySnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(f => f.status === "PUBLISHED");
+
+        // Local sort: featured order first, then newest
         films.sort((a, b) => {
+            const orderA = Number(a.selected_work_order);
+            const orderB = Number(b.selected_work_order);
+            const aHas = Number.isFinite(orderA) ? orderA : 999;
+            const bHas = Number.isFinite(orderB) ? orderB : 999;
+            if (aHas !== bHas) return aHas - bHas; // asc
+
             const timeA = a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
             const timeB = b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
             return timeB - timeA; // desc
         });
+
         return films.slice(0, 4);
     } catch (error) {
         console.error("Error fetching featured films:", error);
@@ -117,14 +124,21 @@ export async function submitInquiry(data) {
 /**
  * Fetch public albums
  */
-export async function getAlbums() {
+export async function getAlbums(category = null) {
     try {
-        const q = query(collection(db, "albums"), where("access_level", "==", "PUBLIC"));
+        const albumsRef = collection(db, "albums");
+        // Avoid composite-index requirements by querying on a single field
+        // and filtering the rest locally.
+        const q = category
+            ? query(albumsRef, where("category", "==", category))
+            : query(albumsRef, where("access_level", "==", "PUBLIC"));
         const querySnapshot = await getDocs(q);
-        const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const albums = querySnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(a => a.access_level === "PUBLIC");
         albums.sort((a, b) => {
-            const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || 0;
-            const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || 0;
+            const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
+            const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
             return timeB - timeA; // desc
         });
         return albums;
@@ -139,17 +153,16 @@ export async function getAlbums() {
  */
 export async function getFeaturedAlbums() {
     try {
-        const q = query(
-            collection(db, "albums"), 
-            where("is_selected_home", "==", true),
-            where("access_level", "==", "PUBLIC")
-        );
+        // Query on a single field to avoid composite-index requirements.
+        const q = query(collection(db, "albums"), where("is_selected_home", "==", true));
         const querySnapshot = await getDocs(q);
-        const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const albums = querySnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(a => a.access_level === "PUBLIC");
         // Local sort
         albums.sort((a, b) => {
-            const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || 0;
-            const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || 0;
+            const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
+            const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
             return timeB - timeA; // desc
         });
         return albums.slice(0, 4);

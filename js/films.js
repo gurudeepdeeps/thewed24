@@ -27,6 +27,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 allFilms = await getFilms();
                 // Filter only PUBLISHED
                 allFilms = allFilms.filter(film => film.status === 'PUBLISHED');
+
+                // Sort: Featured (Selected Works) first, then by featured order, then newest
+                const toTime = (v) => {
+                    if (!v) return 0;
+                    if (typeof v?.toMillis === 'function') return v.toMillis();
+                    const parsed = Date.parse(v);
+                    return Number.isNaN(parsed) ? 0 : parsed;
+                };
+                allFilms.sort((a, b) => {
+                    const aFeatured = !!a.is_selected_work;
+                    const bFeatured = !!b.is_selected_work;
+                    if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
+
+                    if (aFeatured && bFeatured) {
+                        const orderA = Number(a.selected_work_order);
+                        const orderB = Number(b.selected_work_order);
+                        const aHas = Number.isFinite(orderA) ? orderA : 999;
+                        const bHas = Number.isFinite(orderB) ? orderB : 999;
+                        if (aHas !== bHas) return aHas - bHas; // asc
+                    }
+
+                    const timeA = toTime(a.created_at);
+                    const timeB = toTime(b.created_at);
+                    return timeB - timeA; // desc
+                });
             } catch (e) {
                 console.error("Error loading films from Firebase", e);
                 if (loader) loader.classList.remove('active');

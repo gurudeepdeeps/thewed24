@@ -36,11 +36,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         homeAlbumsContainer.innerHTML = '';
         
         albumList.forEach((album, index) => {
-            const date = new Date(album.event_date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long'
-            });
-
             const albumEl = document.createElement('div');
             albumEl.className = 'album-preview-item h-full fade-in flex flex-col group cursor-pointer';
             
@@ -61,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h3 class="text-3xl italic font-bold font-serif text-primary truncate flex-1">${album.title}</h3>
                         <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='album?id=${album.id}'">View Full Album</button>
                     </div>
-                    <p class="text-[10px] tracking-[0.3em] uppercase text-primary/60 mt-3">${date}</p>
                 </div>
             `;
 

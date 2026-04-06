@@ -609,6 +609,33 @@ ul {
     display: block;
 }
 
+/* Flex & Text Utilities */
+.whitespace-nowrap {
+    white-space: nowrap !important;
+}
+
+.overflow-hidden {
+    overflow: hidden !important;
+}
+
+.text-ellipsis {
+    text-overflow: ellipsis !important;
+}
+
+.truncate {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.flex-1 {
+    flex: 1 1 0% !important;
+}
+
+.shrink-0 {
+    flex-shrink: 0 !important;
+}
+
 /* Grid Utilities */
 .grid {
     display: grid;

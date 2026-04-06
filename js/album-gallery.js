@@ -92,9 +92,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                 </div>
                 <div class="mt-8">
-                    <div class="flex items-center justify-between gap-6 flex-wrap">
-                        <h3 class="text-2xl italic font-semibold font-serif text-primary">${album.title}</h3>
-                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap ml-auto" onclick="window.location.href='album?id=${album.id}'">View Full Album</button>
+                    <div class="flex items-center justify-between gap-4">
+                        <h3 class="text-2xl italic font-semibold font-serif text-primary truncate flex-1">${album.title}</h3>
+                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="window.location.href='album?id=${album.id}'">View Full Album</button>
                     </div>
                     <p class="text-[10px] tracking-[0.3em] uppercase text-primary/60 mt-3">${date}</p>
                 </div>

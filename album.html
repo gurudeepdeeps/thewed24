@@ -60,6 +60,34 @@
                 align-self: flex-start; /* Stop stretching vertically */
                 white-space: nowrap;
             }
+
+            /* Detail View Header Mobile Fix */
+            #album-detail-view .detail-view-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                margin-bottom: 4rem;
+            }
+
+            #album-detail-view #detail-album-title {
+                font-size: 3.5rem !important;
+                margin-bottom: 0.5rem !important;
+                margin-top: 1rem;
+            }
+
+            #album-detail-view #detail-album-date {
+                font-size: 11px !important;
+                letter-spacing: 0.3em !important;
+                opacity: 0.6;
+            }
+        }
+
+        /* Desktop specific refinements for detail view */
+        @media (min-width: 769px) {
+            .detail-view-header {
+                margin-bottom: 6rem;
+            }
         }
     </style>
 </head>
@@ -123,15 +151,15 @@
         <!-- Separate Detail View Section -->
         <section id="album-detail-view" style="display: none; min-height: 100vh; padding-top: 100px; background-color: #F6F3EC;" class="px-8 md:px-12 pb-32">
             <div class="max-w-7xl mx-auto">
-                <div style="margin-bottom: 40px; display: block !important;">
-                    <a href="album" style="display: inline-flex !important; align-items: center; gap: 12px; border: 1px solid #D4AF37; color: #D4AF37; background: transparent; padding: 10px 24px; border-radius: 50px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.3em; font-size: 10px; font-weight: 500; transition: all 0.3s ease;" class="hover:bg-primary-gold hover:text-black group">
-                        <span class="material-icons" style="font-size: 16px;">arrow_back</span>
-                        Back to All Albums
-                    </a>
-                </div>
-                
-                <div class="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-12">
-                    <div>
+                <div class="detail-view-header fade-in">
+                    <div style="margin-bottom: 30px;">
+                        <a href="album" style="display: inline-flex; align-items: center; gap: 12px; border: 1px solid #D4AF37; color: #D4AF37; background: transparent; padding: 10px 24px; border-radius: 50px; text-decoration: none; text-transform: uppercase; letter-spacing: 0.3em; font-size: 10px; font-weight: 500; transition: all 0.3s ease;" class="hover:bg-primary-gold hover:text-black group">
+                            <span class="material-icons" style="font-size: 16px;">arrow_back</span>
+                            Back to All Albums
+                        </a>
+                    </div>
+                    
+                    <div class="detail-title-box">
                         <h2 id="detail-album-title" class="brand-headline text-6xl md:text-8xl mb-6 italic leading-tight">Album Title</h2>
                         <p id="detail-album-date" class="text-[12px] tracking-[0.5em] uppercase text-primary/40 font-light">Date of Event</p>
                     </div>

@@ -148,9 +148,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (headerSection) headerSection.style.display = 'none';
         if (detailView) detailView.style.display = 'block';
 
-        // Find album info
+        // Find album info (client albums only on this page)
         const album = albums.find(a => a.id === albumId);
-        if (!album) dbgWarn('detail view: album not found in loaded list', { albumId, loadedCount: albums.length });
+        if (!album) {
+            dbgWarn('detail view: album not found in loaded list', { albumId, loadedCount: albums.length });
+            if (detailTitle) detailTitle.innerText = 'Collection Not Available';
+            if (detailCover) detailCover.style.display = 'none';
+            if (detailGrid) {
+                detailGrid.innerHTML = `
+                    <div class="col-span-full text-center py-24">
+                        <p class="opacity-70 tracking-[0.3em] uppercase text-[10px] mb-4">Not available on Albums page</p>
+                        <p class="opacity-50">If this is a Pre-Wedding collection, open it from the Pre-Wedding page.</p>
+                        <div class="mt-8 flex gap-4 justify-center flex-wrap">
+                            <a class="btn btn-outline" href="${albumBasePage}">Back to Albums</a>
+                            <a class="btn" href="pre-wedding?id=${encodeURIComponent(albumId)}">Open in Pre-Wedding</a>
+                        </div>
+                    </div>
+                `;
+            }
+            return;
+        }
         if (album) {
             if (detailTitle) detailTitle.innerText = album.title;
 

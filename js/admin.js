@@ -264,6 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let lastVisibleAlbumDoc = null;
     const ALBUMS_PER_PAGE = 6;
     let currentAlbumsFilter = 'ALL';
+    let fetchAlbumsRequestId = 0;
     window.albumsMap = {};
     let editingAlbumId = null;
     let currentManagingAlbumId = null;
@@ -275,8 +276,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let editingTestimonialId = null;
 
     async function fetchAlbums(reset = true) {
+        const requestId = ++fetchAlbumsRequestId;
         const listContainer = document.getElementById('albumsList');
         const loadMoreBtn = document.getElementById('loadMoreAlbumsBtn');
+        const statusMsg = document.getElementById('albumsLoadStatusMsg');
         if (!listContainer) return;
 
         if (reset) {
@@ -285,11 +288,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.albumsMap = {};
             listContainer.innerHTML = '<div class="opacity-100 text-center py-8 tracking-widest uppercase text-sm">LOADING ALBUMS...</div>';
             if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+            if (statusMsg) {
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = 'var(--color-primary)';
+                statusMsg.innerText = 'LOADING ALBUMS...';
+            }
         } else {
             if (loadMoreBtn) loadMoreBtn.innerHTML = '<span class="animate-spin material-icons mr-2">refresh</span> LOADING...';
         }
 
         try {
+            logBackend('Fetch Albums', 'INFO', `Starting fetchAlbums(reset=${reset}, requestId=${requestId})`);
+
             // 1. Build Query
             const albumsRef = collection(db, "albums");
             let q = query(albumsRef, orderBy("created_at", "desc"));
@@ -301,6 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const querySnapshot = await getDocs(q);
+            if (requestId !== fetchAlbumsRequestId) return;
             const albums = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             if (querySnapshot.docs.length > 0) {
@@ -308,9 +319,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             logBackend('Fetch Albums', 'SUCCESS', `Loaded ${albums.length} albums`);
+            if (statusMsg) {
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = 'var(--color-primary)';
+                statusMsg.innerText = `LOADED ${albums.length} ALBUMS`;
+                setTimeout(() => {
+                    if (requestId !== fetchAlbumsRequestId) return;
+                    statusMsg.style.display = 'none';
+                    statusMsg.innerText = '';
+                }, 2500);
+            }
 
             // 2. Total Count
             const countSnap = await getCountFromServer(albumsRef);
+            if (requestId !== fetchAlbumsRequestId) return;
             const totalCount = countSnap.data().count;
 
             if (reset) {
@@ -362,6 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="flex items-center gap-2">
                                 <h3 class="font-medium text-lg">${album.title}</h3>
                                 ${album.is_selected_home ? '<span class="material-icons text-primary text-sm" title="Featured on Home Page">stars</span>' : ''}
+                                ${album.is_selected_home ? `<span class="text-[10px] tracking-widest uppercase px-2 py-1 border border-primary/30 text-primary/80" style="border-radius: 999px;" title="Featured Order">#${album.selected_home_order || '-'}</span>` : ''}
                             </div>
                         </div>
 
@@ -417,11 +440,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             setTimeout(() => {
+                if (requestId !== fetchAlbumsRequestId) return;
                 listContainer.querySelectorAll('.fade-in:not(.visible)').forEach(c => c.classList.add('visible'));
             }, 50);
 
         } catch (err) {
+            if (requestId !== fetchAlbumsRequestId) return;
             logBackend('Fetch Albums', 'ERROR', `Failed to load albums`, err);
+            if (statusMsg) {
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = 'var(--color-error)';
+                statusMsg.innerText = `FAILED TO LOAD: ${err.message || 'Unknown error'}`;
+            }
             if (reset) {
                 listContainer.innerHTML = `<div class="text-error text-center py-8">FAILED TO LOAD: ${err.message}</div>`;
             }
@@ -500,6 +530,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             listContainer.innerHTML = html;
+
+            // Bulk actions (pre-wedding)
+            const deleteSelectedBtn = document.getElementById('deleteSelectedPreweddingBtn');
+            const countSpn = document.getElementById('selectedPreweddingCount');
+            function updateBulkUI() {
+                const checkedCount = document.querySelectorAll('.prewedding-bulk-checkbox:checked').length;
+                if (deleteSelectedBtn) deleteSelectedBtn.style.display = checkedCount > 0 ? 'flex' : 'none';
+                if (countSpn) countSpn.innerText = checkedCount;
+            }
+            document.querySelectorAll('.prewedding-bulk-checkbox').forEach(cb => cb.addEventListener('change', updateBulkUI));
+            updateBulkUI();
+
             setTimeout(() => {
                 listContainer.querySelectorAll('.fade-in:not(.visible)').forEach(c => c.classList.add('visible'));
             }, 50);
@@ -532,6 +574,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         select.style.cursor = isLocked ? 'not-allowed' : '';
     }
 
+    function storageRefFromPathOrUrl(pathOrUrl) {
+        if (!pathOrUrl) return null;
+        const value = String(pathOrUrl);
+
+        // Firebase download URL -> storage path
+        if (value.includes('firebasestorage.googleapis.com')) {
+            try {
+                const match = value.match(/\/o\/([^?]+)/);
+                if (!match) return null;
+                const objectPath = decodeURIComponent(match[1]);
+                return ref(storage, objectPath);
+            } catch (_) {
+                return null;
+            }
+        }
+
+        // gs:// URLs are supported by `ref(storage, url)`.
+        if (/^gs:\/\//i.test(value)) {
+            try {
+                return ref(storage, value);
+            } catch (_) {
+                return null;
+            }
+        }
+
+        // Non-Firebase remote URLs should not be treated as storage paths.
+        if (/^https?:\/\//i.test(value)) return null;
+
+        try {
+            return ref(storage, value);
+        } catch (_) {
+            return null;
+        }
+    }
+
+    async function tryDeleteStorageObject(storageRef) {
+        if (!storageRef) return;
+        try {
+            await deleteObject(storageRef);
+        } catch (e) {
+            const code = e?.code || e?.name || '';
+            if (code === 'storage/object-not-found') return;
+            console.warn(e);
+        }
+    }
+
+    async function deleteAlbumAndAssets(albumId, { album } = {}) {
+        const resolvedAlbum = album || window.albumsMap?.[albumId] || null;
+
+        const q = query(collection(db, "album_images"), where("album_id", "==", albumId));
+        const querySnapshot = await getDocs(q);
+        const images = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Delete cover (best-effort)
+        if (resolvedAlbum?.cover_image_url && String(resolvedAlbum.cover_image_url).includes('firebasestorage')) {
+            const coverRef = storageRefFromPathOrUrl(resolvedAlbum.cover_image_url);
+            await tryDeleteStorageObject(coverRef);
+        }
+
+        for (const img of images) {
+            // Prefer explicit storage paths when available.
+            const storageCandidate = img.storage_path || null;
+            if (storageCandidate) {
+                const imgRef = storageRefFromPathOrUrl(storageCandidate);
+                await tryDeleteStorageObject(imgRef);
+            } else if (img.image_url && String(img.image_url).includes('firebasestorage')) {
+                const imgRef = storageRefFromPathOrUrl(img.image_url);
+                await tryDeleteStorageObject(imgRef);
+            }
+
+            await deleteDoc(doc(db, "album_images", img.id));
+        }
+
+        await deleteDoc(doc(db, "albums", albumId));
+
+        return { title: resolvedAlbum?.title || albumId, imagesDeleted: images.length };
+    }
 
     // --- FIRESTORE TESTIMONIALS LOGIC ---
     async function fetchTestimonials(reset = true) {
@@ -739,6 +858,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('newAlbumForm').reset();
             document.getElementById('currentAlbumCoverPreview').classList.add('hidden');
             setAlbumCategoryLock(false, 'WEDDING', 'ALBUM');
+            syncAlbumFeaturedUI();
 
             const modal = document.getElementById('addAlbumModal');
             if (modal) {
@@ -761,6 +881,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentAlbumCoverPreview').classList.add('hidden');
             const accessSel = document.getElementById('addAlbumAccess');
             if (accessSel) accessSel.value = 'PUBLIC';
+            syncAlbumFeaturedUI();
 
             const modal = document.getElementById('addAlbumModal');
             if (modal) {
@@ -793,6 +914,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setAlbumCategoryLock(false, 'WEDDING', 'ALBUM');
                 const selectedCheckbox = document.getElementById('addAlbumSelected');
                 if (selectedCheckbox) selectedCheckbox.checked = false;
+                const featuredWrap = document.getElementById('albumFeaturedOrderWrap');
+                const featuredOrder = document.getElementById('addAlbumFeaturedOrder');
+                if (featuredWrap) featuredWrap.classList.add('hidden');
+                if (featuredOrder) featuredOrder.value = '';
                 const statusMsg = document.getElementById('albumUploadStatusMsg');
                 if (statusMsg) {
                     statusMsg.style.display = 'none';
@@ -803,6 +928,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     if (closeAlbumModalBtn) closeAlbumModalBtn.onclick = closeAddAlbumModal;
     if (cancelAlbumBtn) cancelAlbumBtn.onclick = closeAddAlbumModal;
+
+    // Featured order UI toggle (Albums)
+    const addAlbumSelected = document.getElementById('addAlbumSelected');
+    const albumFeaturedWrap = document.getElementById('albumFeaturedOrderWrap');
+    const albumFeaturedOrder = document.getElementById('addAlbumFeaturedOrder');
+    function syncAlbumFeaturedUI() {
+        // Only client albums (not pre-wedding) can be ordered on the home page.
+        if (currentAlbumModalMode !== 'ALBUM') {
+            if (albumFeaturedWrap) albumFeaturedWrap.classList.add('hidden');
+            if (albumFeaturedOrder) albumFeaturedOrder.value = '';
+            return;
+        }
+        if (addAlbumSelected?.checked) {
+            if (albumFeaturedWrap) albumFeaturedWrap.classList.remove('hidden');
+        } else {
+            if (albumFeaturedWrap) albumFeaturedWrap.classList.add('hidden');
+            if (albumFeaturedOrder) albumFeaturedOrder.value = '';
+        }
+    }
+    if (addAlbumSelected) addAlbumSelected.addEventListener('change', syncAlbumFeaturedUI);
 
     // Save Album
     const newAlbumForm = document.getElementById('newAlbumForm');
@@ -816,9 +961,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const category = currentAlbumModalMode === 'PREWEDDING' ? 'ENGAGEMENT' : document.getElementById('addAlbumCategory').value;
             const access_level = document.getElementById('addAlbumAccess').value;
             const isFeatured = document.getElementById('addAlbumSelected')?.checked || false;
+            const featuredOrderRaw = document.getElementById('addAlbumFeaturedOrder')?.value || '';
             const coverFileInput = document.getElementById('addAlbumCover');
 
             try {
+                const featuredOrder = featuredOrderRaw ? Number(featuredOrderRaw) : null;
+
                 const parseTitleClient = (raw) => {
                     const value = (raw || '').trim();
                     if (!value) return { title: '', client_name: '' };
@@ -849,19 +997,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const { title, client_name } = parseTitleClient(titleClientRaw);
                 if (!title) throw new Error('Album Title / Client Name is required.');
 
-                // Limit Check for featured albums
-                if (isFeatured) {
-                    const q = query(collection(db, "albums"), where("is_selected_home", "==", true));
-                    const snapshot = await getCountFromServer(q);
-                    let count = snapshot.data().count;
-
-                    // If editing, and it was already featured, count is effectively one less
-                    if (editingAlbumId && window.albumsMap[editingAlbumId].is_selected_home) {
-                        count--;
+                // Limit + Order Check for featured client albums (home page)
+                if (isFeatured && currentAlbumModalMode === 'ALBUM') {
+                    if (!featuredOrder || Number.isNaN(featuredOrder) || featuredOrder < 1 || featuredOrder > 4) {
+                        throw new Error('Please select a Featured Order between 1 and 4.');
                     }
 
-                    if (count >= 4) {
+                    const featuredSnap = await getDocs(query(collection(db, "albums"), where("is_selected_home", "==", true)));
+                    const featuredAlbums = featuredSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    const featuredClientAlbums = featuredAlbums
+                        .filter(a => String(a.category || '').toUpperCase() !== 'ENGAGEMENT')
+                        .filter(a => !editingAlbumId || a.id !== editingAlbumId);
+
+                    if (featuredClientAlbums.length >= 4) {
                         throw new Error(`You can only feature a maximum of 4 albums on the home page. Please unfeature another album first.`);
+                    }
+
+                    const conflict = featuredClientAlbums.find(a => Number(a.selected_home_order) === featuredOrder);
+                    if (conflict) {
+                        throw new Error(`Featured Order ${featuredOrder} is already used by another album. Choose a different order.`);
                     }
                 }
 
@@ -891,6 +1045,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     category,
                     access_level,
                     is_selected_home: isFeatured,
+                    selected_home_order: (isFeatured && currentAlbumModalMode === 'ALBUM') ? featuredOrder : null,
                     cover_image_url: coverUrl,
                     updated_at: new Date().toISOString()
                 };
@@ -1248,6 +1403,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (selectedCheckbox) {
             selectedCheckbox.checked = album.is_selected_home || false;
         }
+        const featuredOrder = document.getElementById('addAlbumFeaturedOrder');
+        if (featuredOrder) featuredOrder.value = (album.selected_home_order != null) ? String(album.selected_home_order) : '';
+        syncAlbumFeaturedUI();
 
         const preview = document.getElementById('currentAlbumCoverPreview');
         if (album.cover_image_url) {
@@ -1271,40 +1429,81 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!album || !confirm(`Delete album '${album.title}' and all its photos?`)) return;
 
         try {
-            // 1. Get all images to clean storage
-            const q = query(collection(db, "album_images"), where("album_id", "==", id));
-            const querySnapshot = await getDocs(q);
-            const images = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            // Delete storage objects separately
-            if (album.cover_image_url && album.cover_image_url.includes('firebasestorage')) {
-                try {
-                    const coverRef = ref(storage, album.cover_image_url);
-                    await deleteObject(coverRef).catch(e => console.warn(e));
-                } catch(e) {}
-            }
-
-            if (images) {
-                for (let img of images) {
-                    if (img.image_url && img.image_url.includes('firebasestorage')) {
-                        try {
-                            const imgRef = ref(storage, img.storage_path || img.image_url);
-                            await deleteObject(imgRef).catch(e => console.warn(e));
-                        } catch(e) {}
-                    }
-                    await deleteDoc(doc(db, "album_images", img.id));
-                }
-            }
-
-            await deleteDoc(doc(db, "albums", id));
-
-            logBackend('Delete Album', 'SUCCESS', `Album '${album.title}' and all content removed`);
-            fetchAlbums(true);
+            logBackend('Delete Album', 'INFO', `Deleting album '${album.title}' (${id})...`);
+            const result = await deleteAlbumAndAssets(id, { album });
+            logBackend('Delete Album', 'SUCCESS', `Album '${result.title}' removed (${result.imagesDeleted} images)`);
+            await fetchAlbums(true);
 
         } catch (err) {
             logBackend('Delete Album', 'ERROR', `Critical failure during album deletion ${id}`, err);
             alert('Delete failed: ' + err.message);
         }
+    }
+
+    // Bulk delete (Client Albums)
+    const deleteSelectedAlbumsBtn = document.getElementById('deleteSelectedAlbumsBtn');
+    if (deleteSelectedAlbumsBtn) {
+        deleteSelectedAlbumsBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const checkedBoxes = document.querySelectorAll('.album-bulk-checkbox:checked');
+            const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
+            if (idsToDelete.length === 0) return;
+
+            if (!confirm(`Delete ${idsToDelete.length} selected albums and all their photos?`)) return;
+
+            const prevHtml = deleteSelectedAlbumsBtn.innerHTML;
+            deleteSelectedAlbumsBtn.disabled = true;
+            deleteSelectedAlbumsBtn.innerText = 'DELETING...';
+
+            try {
+                for (const id of idsToDelete) {
+                    const album = window.albumsMap?.[id] || null;
+                    await deleteAlbumAndAssets(id, { album });
+                }
+                logBackend('Bulk Delete Albums', 'SUCCESS', `Deleted ${idsToDelete.length} albums`);
+            } catch (err) {
+                logBackend('Bulk Delete Albums', 'ERROR', 'Failed during bulk album deletion', err);
+                alert('Bulk delete failed: ' + (err.message || 'Unknown error'));
+            } finally {
+                deleteSelectedAlbumsBtn.disabled = false;
+                deleteSelectedAlbumsBtn.innerHTML = prevHtml;
+                deleteSelectedAlbumsBtn.style.display = 'none';
+                await fetchAlbums(true);
+            }
+        });
+    }
+
+    // Bulk delete (Pre-Wedding)
+    const deleteSelectedPreweddingBtn = document.getElementById('deleteSelectedPreweddingBtn');
+    if (deleteSelectedPreweddingBtn) {
+        deleteSelectedPreweddingBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const checkedBoxes = document.querySelectorAll('.prewedding-bulk-checkbox:checked');
+            const idsToDelete = Array.from(checkedBoxes).map(cb => cb.value);
+            if (idsToDelete.length === 0) return;
+
+            if (!confirm(`Delete ${idsToDelete.length} selected pre-wedding albums and all their photos?`)) return;
+
+            const prevHtml = deleteSelectedPreweddingBtn.innerHTML;
+            deleteSelectedPreweddingBtn.disabled = true;
+            deleteSelectedPreweddingBtn.innerText = 'DELETING...';
+
+            try {
+                for (const id of idsToDelete) {
+                    const album = window.albumsMap?.[id] || null;
+                    await deleteAlbumAndAssets(id, { album });
+                }
+                logBackend('Bulk Delete Pre-Wedding', 'SUCCESS', `Deleted ${idsToDelete.length} pre-wedding albums`);
+            } catch (err) {
+                logBackend('Bulk Delete Pre-Wedding', 'ERROR', 'Failed during bulk pre-wedding deletion', err);
+                alert('Bulk delete failed: ' + (err.message || 'Unknown error'));
+            } finally {
+                deleteSelectedPreweddingBtn.disabled = false;
+                deleteSelectedPreweddingBtn.innerHTML = prevHtml;
+                deleteSelectedPreweddingBtn.style.display = 'none';
+                await fetchPreweddingAlbums();
+            }
+        });
     }
 
     // --- TESTIMONIALS HANDLERS ---

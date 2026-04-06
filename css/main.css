@@ -665,6 +665,10 @@ ul {
     row-gap: 6rem;
 }
 
+.gap-y-32 {
+    row-gap: 8rem;
+}
+
 @media (min-width: 768px) {
     .md\:grid-cols-2 {
         grid-template-columns: repeat(2, minmax(0, 1fr));

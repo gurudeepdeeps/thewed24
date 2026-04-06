@@ -135,7 +135,14 @@ export async function getAlbums(category = null) {
         const querySnapshot = await getDocs(q);
         const albums = querySnapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(a => a.access_level === "PUBLIC");
+            .filter(a => a.access_level === "PUBLIC")
+            // Default Album page should not include Pre-Wedding (ENGAGEMENT) albums.
+            // Pre-wedding page passes `category='ENGAGEMENT'` explicitly.
+            .filter(a => {
+                const cat = String(a.category || '').toUpperCase();
+                if (category) return cat === String(category).toUpperCase();
+                return cat !== 'ENGAGEMENT';
+            });
         albums.sort((a, b) => {
             const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
             const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
@@ -158,9 +165,20 @@ export async function getFeaturedAlbums() {
         const querySnapshot = await getDocs(q);
         const albums = querySnapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(a => a.access_level === "PUBLIC");
-        // Local sort
+            .filter(a => a.access_level === "PUBLIC")
+            // Homepage "featured collections" should show client albums, not pre-wedding (ENGAGEMENT).
+            .filter(a => String(a.category || '').toUpperCase() !== 'ENGAGEMENT');
+        // Local sort: explicit featured order first, then fallback to newest.
         albums.sort((a, b) => {
+            const orderA = Number(a.selected_home_order);
+            const orderB = Number(b.selected_home_order);
+            const hasA = Number.isFinite(orderA) && orderA > 0;
+            const hasB = Number.isFinite(orderB) && orderB > 0;
+
+            if (hasA && hasB) return orderA - orderB; // asc
+            if (hasA) return -1;
+            if (hasB) return 1;
+
             const timeA = a.event_date?.toMillis?.() || Date.parse(a.event_date) || a.created_at?.toMillis?.() || Date.parse(a.created_at) || 0;
             const timeB = b.event_date?.toMillis?.() || Date.parse(b.event_date) || b.created_at?.toMillis?.() || Date.parse(b.created_at) || 0;
             return timeB - timeA; // desc

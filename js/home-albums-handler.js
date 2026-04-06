@@ -47,14 +47,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? `<img src="${album.cover_image_url}"` 
                 : '<div class="w-full h-full bg-surface-container flex items-center justify-center"><span class="material-icons opacity-20 text-4xl">photo_album</span></div>';
 
+            const basePage = (String(album.category || '').toUpperCase() === 'ENGAGEMENT') ? 'pre-wedding' : 'album';
+
             albumEl.innerHTML = `
-                <div class="relative aspect-video bg-surface-container overflow-hidden mb-8 cursor-pointer" onclick="window.location.href='album?id=${album.id}'">
+                <div class="relative aspect-video bg-surface-container overflow-hidden mb-8 cursor-pointer" onclick="window.location.href='${basePage}?id=${album.id}'">
                     ${coverImage} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                 </div>
                 <div class="mt-8">
                     <div class="flex items-center justify-between gap-4">
                         <h3 class="text-3xl italic font-bold font-serif text-primary truncate flex-1">${album.title}</h3>
-                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='album?id=${album.id}'">View Full Album</button>
+                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='${basePage}?id=${album.id}'">View Full Album</button>
                     </div>
                 </div>
             `;

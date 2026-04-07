@@ -67,6 +67,13 @@ nav ul {
     .mobile-menu-btn { display: block !important; }
 }
 
+/* Detail pages: ensure content clears fixed header on mobile */
+@media (max-width: 768px) {
+    #album-detail-view {
+        padding-top: calc(140px + env(safe-area-inset-top)) !important;
+    }
+}
+
 .mobile-menu-btn {
     display: none;
     background: none;
@@ -893,6 +900,47 @@ header .btn-outline:hover {
     color: var(--color-primary);
 }
 
+/* Album title + action row (Home/Albums/Pre-wedding) */
+.album-title-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.album-title-action-row .album-title {
+    flex: 1 1 18rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.album-title-action-row .album-action-btn {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+    .album-title-action-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+    }
+
+    .album-title-action-row .album-title {
+        white-space: normal;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .album-title-action-row .album-action-btn {
+        margin-left: 0;
+    }
+}
+
 /* Testimonial Components */
 .testimonial-card-dribbble {
     background: var(--color-surface-lowest);
@@ -974,4 +1022,3 @@ header .btn-outline:hover {
     letter-spacing: 0.2em;
     margin-bottom: 0.5rem;
 }
-

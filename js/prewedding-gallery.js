@@ -117,9 +117,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                 </div>
                 <div class="mt-8">
-                    <div class="flex items-center justify-between gap-4">
-                        <h3 class="text-2xl italic font-semibold font-serif text-primary truncate flex-1">${album.title}</h3>
-                        <button class="btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="window.location.href='${albumBasePage}?id=${album.id}'">View Full Album</button>
+                    <div class="album-title-action-row">
+                        <h3 class="album-title text-2xl italic font-semibold font-serif text-primary">${album.title}</h3>
+                        <button class="album-action-btn btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="window.location.href='${albumBasePage}?id=${album.id}'">View Full Album</button>
                     </div>
                 </div>
             `;
@@ -313,4 +313,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     fetchPublicAlbums();
 });
-

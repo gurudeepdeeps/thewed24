@@ -1,3 +1,46 @@
+/* Ensure preloader tagline is block */
+.preloader-italic.brand-tagline {
+    display: block;
+}
+/* Ensure preloader tagline is block */
+.preloader-italic.brand-tagline {
+    display: block;
+}
+/* Ensure preloader tagline is block */
+.preloader-italic.brand-tagline {
+    display: block;
+}
+
+/* Ensure hero headline has text shadow */
+.text-shadow-lg {
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
+/* Remove inline style: display: block for preloader tagline */
+.preloader-italic.brand-tagline {
+    display: block;
+}
+/* Custom classes for moved inline styles */
+.preloader-logo-img {
+    height: 100px;
+    width: auto;
+    margin-bottom: 20px;
+}
+
+.footer-logo-img {
+    height: 50px;
+    width: auto;
+}
+
+.btn-consultation {
+    background: var(--color-primary);
+    color: #000;
+    font-weight: 600;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.text-shadow-lg {
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
 /* main.css - Global Design System for The Wed 24 */
 
 /* Critical Utils */
@@ -765,7 +808,6 @@ ul {
 
 .break-inside-avoid {
     break-inside: avoid !important;
-    -webkit-column-break-inside: avoid;
 }
 
 @media (max-width: 1024px) {

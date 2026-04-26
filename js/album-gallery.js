@@ -36,6 +36,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.warn('[albums]', ...args);
     };
 
+    const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+
     // Scroll to Top Logic
     const scrollTopBtn = document.getElementById('scrollToTop');
     
@@ -108,6 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const albumEl = document.createElement('div');
             albumEl.className = 'album-item fade-in';
             const coverImage = album.cover_image_url ? `src="${album.cover_image_url}"` : '';
+            const oneLineText = (album.album_tagline || '').trim();
             albumEl.innerHTML = `
                 <div class="image-wrapper aspect-video bg-surface-container overflow-hidden relative group cursor-pointer" onclick="window.location.href='${albumBasePage}?id=${album.id}'">
                     <img ${coverImage} 
@@ -118,6 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h3 class="album-title text-2xl italic font-semibold font-serif text-primary">${album.title}</h3>
                         <button class="album-action-btn btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="window.location.href='${albumBasePage}?id=${album.id}'">View Full Album</button>
                     </div>
+                    ${oneLineText ? `<p class="album-one-line-text">${escapeHtml(oneLineText)}</p>` : ''}
                 </div>
             `;
             albumGrid.appendChild(albumEl);
@@ -139,6 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const detailView = document.getElementById('album-detail-view');
         const detailGrid = document.getElementById('detail-image-grid');
         const detailTitle = document.getElementById('detail-album-title');
+        const detailTagline = document.getElementById('detail-album-tagline');
         const detailCover = document.getElementById('detail-cover-page');
         const detailCoverImg = document.getElementById('detail-cover-img');
         const headerSection = document.querySelector('.album-header');
@@ -153,6 +164,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!album) {
             dbgWarn('detail view: album not found in loaded list', { albumId, loadedCount: albums.length });
             if (detailTitle) detailTitle.innerText = 'Collection Not Available';
+            if (detailTagline) {
+                detailTagline.innerText = '';
+                detailTagline.style.display = 'none';
+            }
             if (detailCover) detailCover.style.display = 'none';
             if (detailGrid) {
                 detailGrid.innerHTML = `
@@ -170,6 +185,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (album) {
             if (detailTitle) detailTitle.innerText = album.title;
+            if (detailTagline) {
+                const oneLineText = (album.album_tagline || '').trim();
+                detailTagline.innerText = oneLineText;
+                detailTagline.style.display = oneLineText ? 'block' : 'none';
+            }
 
             const coverUrl = album.cover_page_image_url || album.cover_image_url || null;
             dbg('detail album', { id: album.id, title: album.title, category: album.category, access_level: album.access_level, coverUrl: !!coverUrl });

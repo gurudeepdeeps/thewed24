@@ -10,6 +10,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!homeAlbumsContainer) return;
 
+    const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[char]));
+
     try {
         const albums = await getFeaturedAlbums();
         
@@ -48,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : '<div class="w-full h-full bg-surface-container flex items-center justify-center"><span class="material-icons opacity-20 text-4xl">photo_album</span></div>';
 
             const basePage = (String(album.category || '').toUpperCase() === 'ENGAGEMENT') ? 'pre-wedding' : 'album';
+            const oneLineText = (album.album_tagline || '').trim();
 
             albumEl.innerHTML = `
                 <div class="relative aspect-video bg-surface-container overflow-hidden mb-8 cursor-pointer" onclick="window.location.href='${basePage}?id=${album.id}'">
@@ -58,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h3 class="album-title text-3xl italic font-bold font-serif text-primary">${album.title}</h3>
                         <button class="album-action-btn btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='${basePage}?id=${album.id}'">View Full Album</button>
                     </div>
+                    ${oneLineText ? `<p class="album-one-line-text">${escapeHtml(oneLineText)}</p>` : ''}
                 </div>
             `;
 

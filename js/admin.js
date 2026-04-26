@@ -391,6 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="film-couple">
                             <div class="text-[10px] opacity-100 tracking-widest uppercase mb-1">CLIENT</div>
                             <div>${album.client_name}</div>
+                            ${album.album_tagline ? `<div class="text-[10px] opacity-60 tracking-widest uppercase mt-2 line-clamp-2">${album.album_tagline}</div>` : ''}
                         </div>
 
                         <div class="film-category w-32">
@@ -505,6 +506,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="film-couple">
                             <div class="text-[10px] opacity-100 tracking-widest uppercase mb-1">CLIENT</div>
                             <div>${album.client_name || '-'}</div>
+                            ${album.album_tagline ? `<div class="text-[10px] opacity-60 tracking-widest uppercase mt-2 line-clamp-2">${album.album_tagline}</div>` : ''}
                         </div>
 
                         <div class="film-category w-32">
@@ -984,6 +986,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const statusMsg = document.getElementById('albumUploadStatusMsg');
 
             const titleClientRaw = document.getElementById('addAlbumTitleClient').value;
+            const albumTagline = document.getElementById('addAlbumTagline')?.value?.trim() || '';
             const category = currentAlbumModalMode === 'PREWEDDING' ? 'ENGAGEMENT' : document.getElementById('addAlbumCategory').value;
             const access_level = document.getElementById('addAlbumAccess').value;
             const isFeatured = document.getElementById('addAlbumSelected')?.checked || false;
@@ -1070,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     client_name,
                     category,
                     access_level,
+                    album_tagline: albumTagline,
                     is_selected_home: isFeatured,
                     selected_home_order: (isFeatured && currentAlbumModalMode === 'ALBUM') ? featuredOrder : null,
                     cover_image_url: coverUrl,
@@ -1421,6 +1425,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const c = (album.client_name || '').trim();
             combinedInput.value = (t && c && t !== c) ? `${c} | ${t}` : (t || c);
         }
+        const taglineInput = document.getElementById('addAlbumTagline');
+        if (taglineInput) taglineInput.value = album.album_tagline || '';
         document.getElementById('addAlbumCategory').value = album.category || 'WEDDING';
         setAlbumCategoryLock(album.category === 'ENGAGEMENT', album.category || 'WEDDING', album.category === 'ENGAGEMENT' ? 'PREWEDDING' : 'ALBUM');
         document.getElementById('addAlbumAccess').value = album.access_level || 'PRIVATE';

@@ -921,6 +921,23 @@ header .btn-outline:hover {
     flex: 0 0 auto;
 }
 
+.album-one-line-text,
+.album-detail-tagline {
+    color: var(--color-on-surface);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    line-height: 1.8;
+    margin-top: 0.75rem;
+    max-width: 44rem;
+    opacity: 0.62;
+    text-transform: uppercase;
+}
+
+.album-detail-tagline {
+    font-size: 0.82rem;
+    margin-top: -0.5rem;
+}
+
 @media (max-width: 640px) {
     .album-title-action-row {
         display: grid;
@@ -938,6 +955,12 @@ header .btn-outline:hover {
 
     .album-title-action-row .album-action-btn {
         margin-left: 0;
+    }
+
+    .album-one-line-text,
+    .album-detail-tagline {
+        font-size: 0.66rem;
+        letter-spacing: 0.16em;
     }
 }
 

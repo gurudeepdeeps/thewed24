@@ -46,13 +46,13 @@
                 <li class="nav-item">
                     <a href="#films" class="nav-link" data-target="films">
                         <span class="material-icons">movie</span>
-                        <span>FILMS</span>
+                        <span>WEDDING FILMS</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="#albums" class="nav-link" data-target="albums">
                         <span class="material-icons">photo_album</span>
-                        <span>ALBUMS</span>
+                        <span>WEDDING ALBUMS</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -64,7 +64,7 @@
                 <li class="nav-item">
                     <a href="#about" class="nav-link" data-target="about">
                         <span class="material-icons">person</span>
-                        <span>ABOUT PAGE</span>
+                        <span>ABOUT US</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -192,13 +192,13 @@
                     <div>
                         <h1 class="view-title">The Cinematic Frame</h1>
                         <nav class="admin-tabs" id="filmsFilterTabs">
-                            <a href="#" class="tab-link active" data-filter="ALL">ALL FILMS</a>
+                            <a href="#" class="tab-link active" data-filter="ALL">ALL WEDDING FILMS</a>
                             <a href="#" class="tab-link" data-filter="DRAFT">DRAFTS</a>
                         </nav>
                     </div>
                     <button class="btn btn-primary flex items-center gap-2" id="uploadFilmBtn"
                         style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
-                            class="material-icons text-sm">add</span> UPLOAD NEW FILM</button>
+                            class="material-icons text-sm">add</span> UPLOAD NEW WEDDING FILM</button>
                 </div>
 
                 <!-- Table actions -->
@@ -211,7 +211,7 @@
                         </button>
                     </div>
                     <div class="text-xs tracking-widest uppercase opacity-100">
-                        SHOWING DB FILMS
+                        SHOWING DB WEDDING FILMS
                     </div>
                 </div>
 
@@ -222,7 +222,7 @@
                 <div class="flex justify-center mt-12">
                     <button id="loadMoreFilmsBtn" class="btn btn-outline"
                         style="border: 1px solid var(--color-outline); background: transparent; padding-left: 3rem; padding-right: 3rem;">LOAD
-                        MORE FILMS</button>
+                        MORE WEDDING FILMS</button>
                 </div>
             </section>
 
@@ -231,14 +231,14 @@
             <section id="view-albums" class="admin-view" style="display: none;">
                 <div class="view-header flex justify-between items-end mb-8">
                     <div>
-                        <h1 class="view-title">Client Albums</h1>
+                        <h1 class="view-title">Wedding Albums</h1>
                         <nav class="admin-tabs" id="albumsFilterTabs">
-                            <a href="#" class="tab-link active" data-filter="ALL">ALL ALBUMS</a>
+                            <a href="#" class="tab-link active" data-filter="ALL">ALL WEDDING ALBUMS</a>
                         </nav>
                     </div>
                     <button class="btn btn-primary flex items-center gap-2" id="createAlbumBtn"
                         style="padding: 0.75rem 1.5rem; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.15em; height: fit-content;"><span
-                            class="material-icons text-sm">add</span> CREATE NEW ALBUM</button>
+                            class="material-icons text-sm">add</span> CREATE NEW WEDDING ALBUM</button>
                 </div>
 
                 <div class="table-actions flex justify-between items-center mb-6 px-4">
@@ -250,7 +250,7 @@
                         </button>
                     </div>
                     <div class="text-xs tracking-widest uppercase opacity-100">
-                        SHOWING DB ALBUMS
+                        SHOWING DB WEDDING ALBUMS
                     </div>
                 </div>
 
@@ -265,7 +265,7 @@
                 <div class="flex justify-center mt-12">
                     <button id="loadMoreAlbumsBtn" class="btn btn-outline"
                         style="border: 1px solid var(--color-outline); background: transparent; padding-left: 3rem; padding-right: 3rem;">LOAD
-                        MORE ALBUMS</button>
+                        MORE WEDDING ALBUMS</button>
                 </div>
             </section>
 
@@ -305,7 +305,7 @@
             <section id="view-about" class="admin-view" style="display: none;">
                 <div class="view-header flex justify-between items-end mb-8">
                     <div>
-                        <h1 class="view-title">About Page Manager</h1>
+                        <h1 class="view-title">About Us Manager</h1>
                         <nav id="aboutTabs" class="admin-tabs">
                             <a href="#" class="tab-link active" data-target="about-profile">PROFILE & STORY</a>
                         </nav>
@@ -515,7 +515,7 @@
     <div id="addFilmModal" class="admin-modal">
         <div class="modal-content" style="max-width: 600px;">
             <button class="modal-close" id="closeFilmModalBtn"><span class="material-icons">close</span></button>
-            <h2 id="filmModalTitle" class="font-serif text-3xl mb-4">Upload New Film</h2>
+            <h2 id="filmModalTitle" class="font-serif text-3xl mb-4">Upload New Wedding Film</h2>
             <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
 
             <form id="newFilmForm" class="text-left">
@@ -591,7 +591,7 @@
                 <div class="flex gap-4 justify-end mt-4">
                     <button type="button" class="btn btn-outline" id="cancelFilmBtn"
                         style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
-                    <button type="submit" class="btn btn-primary" id="saveFilmBtn">SAVE FILM</button>
+                    <button type="submit" class="btn btn-primary" id="saveFilmBtn">SAVE WEDDING FILM</button>
                 </div>
             </form>
         </div>
@@ -601,7 +601,7 @@
     <div id="addAlbumModal" class="admin-modal">
         <div class="modal-content" style="max-width: 600px;">
             <button class="modal-close" id="closeAlbumModalBtn"><span class="material-icons">close</span></button>
-            <h2 id="albumModalTitle" class="font-serif text-3xl mb-4">Create New Album</h2>
+            <h2 id="albumModalTitle" class="font-serif text-3xl mb-4">Create New Wedding Album</h2>
             <div class="section-divider-gold mt-2 mb-6 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
 
             <form id="newAlbumForm" class="text-left">
@@ -680,7 +680,7 @@
                 <div class="flex gap-4 justify-end mt-4">
                     <button type="button" class="btn btn-outline" id="cancelAlbumBtn"
                         style="border: 1px solid var(--color-outline); background: transparent;">CANCEL</button>
-                    <button type="submit" class="btn btn-primary" id="saveAlbumBtn">CREATE ALBUM</button>
+                    <button type="submit" class="btn btn-primary" id="saveAlbumBtn">CREATE WEDDING ALBUM</button>
                 </div>
             </form>
         </div>
@@ -750,7 +750,7 @@
     <div id="manageImagesModal" class="admin-modal">
         <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
             <button class="modal-close" id="closeManageImagesBtn"><span class="material-icons">close</span></button>
-            <h2 class="font-serif text-3xl mb-2">Manage Album Images</h2>
+            <h2 class="font-serif text-3xl mb-2">Manage Wedding Album Images</h2>
             <p id="manageImagesSubtitle" class="text-xs tracking-widest uppercase opacity-60 mb-4"></p>
             <div class="section-divider-gold mt-2 mb-8 ml-0 w-16 content-start text-left" style="margin-left: 0;"></div>
 

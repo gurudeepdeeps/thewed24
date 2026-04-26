@@ -126,6 +126,73 @@
             }
         }
 
+        /* Hero Slideshow — Horizontal Slide */
+        .hero-slideshow {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .hero-track {
+            display: flex;
+            width: 400%; /* 4 slides × 100% */
+            height: 100%;
+            transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+            will-change: transform;
+        }
+
+        .hero-slide {
+            position: relative;
+            width: 25%; /* each slide = 100vw (track is 400%) */
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .hero-slide-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.52);
+        }
+
+        /* Dot Indicators */
+        .hero-dots {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .hero-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            border: none;
+            padding: 0;
+        }
+
+        .hero-dot.active {
+            background: var(--color-primary);
+            width: 24px;
+            border-radius: 3px;
+        }
+
         .hero-content {
             z-index: 10;
             max-width: 800px;
@@ -204,8 +271,7 @@
     <div id="preloader">
         <div class="preloader-content">
             <div class="preloader-logo">
-                <img src="assets/the_wed_24_logo.png" alt="The Wed 24 Logo"
-                    class="preloader-logo-img">
+                <img src="assets/the_wed_24_logo.png" alt="The Wed 24 Logo" class="preloader-logo-img">
                 <span class="preloader-italic brand-tagline uppercase text-[10px]" style="display: block;">Silently
                     Narrating Love</span>
             </div>
@@ -227,10 +293,10 @@
         </div>
         <nav class="hidden-mobile">
             <ul>
-                <li><a href="films">Films</a></li>
-                <li><a href="album">Albums</a></li>
+                <li><a href="films">Wedding Films</a></li>
+                <li><a href="album">Wedding Albums</a></li>
                 <li><a href="pre-wedding">Pre-Wedding</a></li>
-                <li><a href="about">About</a></li>
+                <li><a href="about">About Us</a></li>
                 <li><a href="testimonials">Testimonials</a></li>
             </ul>
         </nav>
@@ -247,24 +313,41 @@
         <button class="close-menu-btn" id="menu-close">
             <span class="material-symbols-outlined">close</span>
         </button>
-        <a href="films">Films</a>
-        <a href="album">Albums</a>
+        <a href="films">Wedding Films</a>
+        <a href="album">Wedding Albums</a>
         <a href="pre-wedding">Pre-Wedding</a>
-        <a href="about">About</a>
+        <a href="about">About Us</a>
         <a href="testimonials">Testimonials</a>
         <a href="contact">Contact</a>
     </div>
 
     <!-- Hero Section -->
     <section class="hero-section section-dark">
-        <div class="absolute inset-0 z-0 h-full w-full">
-            <img src="assets/laptop-hero.JPG" alt="The Wed 24 | Luxury Cinematic Frame" class="hero-image hero-zoom">
-            <div class="absolute inset-0 bg-black/60"></div>
+        <!-- Hero Slideshow -->
+        <div class="hero-slideshow">
+            <div class="hero-track" id="heroTrack">
+                <div class="hero-slide">
+                    <img src="assets/laptop-hero-1.webp" alt="The Wed 24 | Cinematic Wedding Frame 1">
+                    <div class="hero-slide-overlay"></div>
+                </div>
+                <div class="hero-slide">
+                    <img src="assets/laptop-hero-2.webp" alt="The Wed 24 | Cinematic Wedding Frame 2">
+                    <div class="hero-slide-overlay"></div>
+                </div>
+                <div class="hero-slide">
+                    <img src="assets/laptop-hero-3.webp" alt="The Wed 24 | Cinematic Wedding Frame 3">
+                    <div class="hero-slide-overlay"></div>
+                </div>
+                <div class="hero-slide">
+                    <img src="assets/laptop-hero-4.webp" alt="The Wed 24 | Cinematic Wedding Frame 4">
+                    <div class="hero-slide-overlay"></div>
+                </div>
+            </div>
         </div>
 
         <div class="hero-content relative z-10" style="text-shadow: 0 2px 20px rgba(0,0,0,0.4);">
-                    <h1 class="brand-headline stagger-in delay-1 text-shadow-lg">The Silent <br> <span
-                        class="italic font-light">Narrative</span></h1>
+            <h1 class="brand-headline stagger-in delay-1 text-shadow-lg">The Silent <br> <span
+                    class="italic font-light">Narrative</span></h1>
             <p class="brand-tagline tracking-vogue-lg uppercase text-xs stagger-in delay-2 mb-16">
                 Cinematography for the
                 timeless romantic</p>
@@ -275,7 +358,45 @@
                     Consultation</a>
             </div>
         </div>
+
+        <!-- Dot Indicators -->
+        <div class="hero-dots" id="heroDots">
+            <button class="hero-dot active" aria-label="Slide 1"></button>
+            <button class="hero-dot" aria-label="Slide 2"></button>
+            <button class="hero-dot" aria-label="Slide 3"></button>
+            <button class="hero-dot" aria-label="Slide 4"></button>
+        </div>
     </section>
+
+    <script>
+        (function () {
+            const track = document.getElementById('heroTrack');
+            const dots = document.querySelectorAll('.hero-dot');
+            const total = dots.length;
+            let current = 0;
+            let timer;
+
+            function goTo(index) {
+                dots[current].classList.remove('active');
+                current = (index + total) % total;
+                track.style.transform = 'translateX(-' + (current * 25) + '%)';
+                dots[current].classList.add('active');
+            }
+
+            function next() { goTo(current + 1); }
+
+            function startTimer() {
+                clearInterval(timer);
+                timer = setInterval(next, 5000);
+            }
+
+            dots.forEach((dot, i) => {
+                dot.addEventListener('click', () => { goTo(i); startTimer(); });
+            });
+
+            startTimer();
+        })();
+    </script>
 
 
     <!-- Albums section Preview (Moved to follow Hero) -->
@@ -299,7 +420,7 @@
 
             <div class="text-center mt-24 fade-in">
                 <a href="album" class="btn px-16 py-6 inline-flex items-center gap-6 group">
-                    <span class="text-xs uppercase tracking-widest">Discover All Albums</span>
+                    <span class="text-xs uppercase tracking-widest">Discover All Wedding Albums</span>
                     <span
                         class="material-icons text-lg transition-transform group-hover:translate-x-2">arrow_right_alt</span>
                 </a>
@@ -327,7 +448,7 @@
         <!-- View All Films CTA -->
         <div class="text-center mt-32 fade-in">
             <a href="films" class="btn px-16 py-5 inline-flex items-center gap-4 group">
-                View All Films
+                View All Wedding Films
                 <span class="material-icons text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
             </a>
         </div>
@@ -335,7 +456,7 @@
 
     <div class="section-divider-gold fade-in"></div>
 
-    <section class="py-32 px-12 max-w-7xl mx-auto">
+    <section class="pt-32 pb-8 px-12 max-w-7xl mx-auto">
         <!-- Profile 01: The Filmmaker -->
         <div class="bio-item">
             <div class="bio-image box-shadow-premium relative bg-surface-lowest">
@@ -350,7 +471,9 @@
             </div>
 
             <div class="bio-content text-center">
-                <span class="text-primary text-xs uppercase tracking-[0.5em] mb-12 block italic font-bold font-serif opacity-90">Founder &
+                <span
+                    class="text-primary text-xs uppercase tracking-[0.5em] mb-12 block italic font-bold font-serif opacity-90">Founder
+                    &
                     Photographer</span>
                 <h2 class="brand-headline text-6xl lg:text-7xl mb-12 leading-[0.9] text-center w-full">
                     <span id="homeAboutName">...</span> <br>
@@ -359,7 +482,7 @@
                 </h2>
 
                 <div id="homeAboutBio"
-                    class="philosophy-text space-y-10 text-sm lg:text-base opacity-60 leading-relaxed font-light max-w-lg mx-auto text-center">
+                    class="philosophy-text space-y-10 text-sm lg:text-base leading-relaxed font-light max-w-lg mx-auto text-center">
                     <p>Loading narrative...</p>
                 </div>
 
@@ -389,6 +512,74 @@
             </div>
         </div>
     </section>
+
+    <div class="section-divider-gold fade-in" style="margin: 1.5rem auto;"></div>
+
+    <!-- Why Choose Us Section -->
+    <section class="pb-32 pt-16 px-12 max-w-7xl mx-auto overflow-hidden">
+        <div class="text-center mb-24 fade-in">
+            <span class="text-primary text-xs uppercase tracking-[0.5em] mb-4 block font-bold">Excellence Defined</span>
+            <h2 class="brand-headline text-5xl lg:text-7xl">Why Choose Us</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-20 stagger-container">
+            <!-- Reason 1 -->
+            <div class="flex flex-col items-center text-center group fade-in">
+                <div
+                    class="w-20 h-20 rounded-full border border-primary/20 flex items-center justify-center mb-10 group-hover:bg-primary/10 transition-all duration-500 group-hover:border-primary/40">
+                    <span class="material-icons text-primary text-4xl">groups</span>
+                </div>
+                <h3 class="font-serif text-3xl mb-6 font-light italic">Experienced Team</h3>
+                <p class="text-sm leading-relaxed font-light tracking-wide">
+                    Our skilled photographers and videographers are experts in capturing emotions and details.
+                </p>
+            </div>
+
+            <!-- Reason 2 -->
+            <div class="flex flex-col items-center text-center group fade-in">
+                <div
+                    class="w-20 h-20 rounded-full border border-primary/20 flex items-center justify-center mb-10 group-hover:bg-primary/10 transition-all duration-500 group-hover:border-primary/40">
+                    <span class="material-icons text-primary text-4xl">camera_enhance</span>
+                </div>
+                <h3 class="font-serif text-2xl mb-6 font-light italic">State of the Art Equipment</h3>
+                <p class="text-sm leading-relaxed font-light tracking-wide">
+                    We use cutting edge technology to ensure stunning images and videos.
+                </p>
+            </div>
+
+            <!-- Reason 3 -->
+            <div class="flex flex-col items-center text-center group fade-in">
+                <div
+                    class="w-20 h-20 rounded-full border border-primary/20 flex items-center justify-center mb-10 group-hover:bg-primary/10 transition-all duration-500 group-hover:border-primary/40">
+                    <span class="material-icons text-primary text-4xl">favorite_border</span>
+                </div>
+                <h3 class="font-serif text-3xl mb-6 font-light italic">Customer Centric Approach</h3>
+                <p class="text-sm leading-relaxed font-light tracking-wide">
+                    Your satisfaction is our priority; we tailor our services to your unique needs.
+                </p>
+            </div>
+
+            <!-- Reason 4 -->
+            <div class="flex flex-col items-center text-center group fade-in">
+                <div
+                    class="w-20 h-20 rounded-full border border-primary/20 flex items-center justify-center mb-10 group-hover:bg-primary/10 transition-all duration-500 group-hover:border-primary/40">
+                    <span class="material-icons text-primary text-4xl">verified</span>
+                </div>
+                <h3 class="font-serif text-3xl mb-6 font-light italic">Timeless Quality</h3>
+                <p class="text-sm leading-relaxed font-light tracking-wide">
+                    We deliver photos and films that you'll treasure for a lifetime.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-32 text-center fade-in">
+            <p class="font-serif text-2xl lg:text-3xl italic max-w-4xl mx-auto leading-relaxed">
+                "Let WED24 be part of your journey, capturing moments that will bring joy to your hearts forever."
+            </p>
+        </div>
+    </section>
+
+
 
 
     <div class="section-divider-gold fade-in"></div>
@@ -476,11 +667,13 @@
                     <ul class="space-y-6">
                         <li><a href="/" class="text-sm uppercase tracking-widest transition-colors">Home</a>
                         </li>
-                        <li><a href="films" class="text-sm uppercase tracking-widest transition-colors">Films</a>
+                        <li><a href="films" class="text-sm uppercase tracking-widest transition-colors">Wedding
+                                Films</a>
                         </li>
-                        <li><a href="album" class="text-sm uppercase tracking-widest transition-colors">Albums</a>
+                        <li><a href="album" class="text-sm uppercase tracking-widest transition-colors">Wedding
+                                Albums</a>
                         </li>
-                        <li><a href="about" class="text-sm uppercase tracking-widest transition-colors">About</a>
+                        <li><a href="about" class="text-sm uppercase tracking-widest transition-colors">About Us</a>
                         </li>
                         <li><a href="testimonials"
                                 class="text-sm uppercase tracking-widest transition-colors">Testimonials</a>
@@ -491,9 +684,12 @@
                     </ul>
                 </div>
             </div>
-            <p class="pt-12 text-sm text-center font-light fade-in">
-                © 2026 The Wed 24. All Rights Reserved.
-            </p>
+            <div class="footer-bottom fade-in">
+                <p>© 2026 The Wed 24. All Rights Reserved.</p>
+                <p class="footer-powered">
+                    Powered by <a href="https://xpensivemedia.vercel.app" target="_blank" class="hover:text-primary transition-colors">Xpensive Media</a>
+                </p>
+            </div>
         </div>
     </footer>
 

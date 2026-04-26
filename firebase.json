@@ -9,6 +9,7 @@
     "rules": "storage.rules"
   },
   "hosting": {
+    "site": "the-wed-24",
     "public": ".",
     "ignore": [
       "firebase.json",

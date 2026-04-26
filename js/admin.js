@@ -609,47 +609,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /**
+     * Best-effort storage deletion
+     */
     async function tryDeleteStorageObject(storageRef) {
         if (!storageRef) return;
         try {
             await deleteObject(storageRef);
         } catch (e) {
+            // Suppress "not found" errors as they are expected during cleanup if files were moved or already deleted
             const code = e?.code || e?.name || '';
-            if (code === 'storage/object-not-found') return;
-            console.warn(e);
+            if (code === 'storage/object-not-found' || code.includes('not-found')) return;
+            console.warn("Storage deletion error (non-critical):", e);
         }
     }
 
+    /**
+     * Deletes an album and all its associated images from both Storage and Firestore.
+     */
     async function deleteAlbumAndAssets(albumId, { album } = {}) {
         const resolvedAlbum = album || window.albumsMap?.[albumId] || null;
+        const albumTitle = resolvedAlbum?.title || albumId;
 
+        logBackend('Delete Album Assets', 'INFO', `Cleaning up assets for album: ${albumTitle}`);
+
+        // 1. Fetch all associated images
         const q = query(collection(db, "album_images"), where("album_id", "==", albumId));
         const querySnapshot = await getDocs(q);
         const images = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        // Delete cover (best-effort)
+        // 2. Delete cover and image assets in parallel
+        const deletionPromises = [];
+
+        // Add cover image deletion
         if (resolvedAlbum?.cover_image_url && String(resolvedAlbum.cover_image_url).includes('firebasestorage')) {
             const coverRef = storageRefFromPathOrUrl(resolvedAlbum.cover_image_url);
-            await tryDeleteStorageObject(coverRef);
+            if (coverRef) deletionPromises.push(tryDeleteStorageObject(coverRef));
         }
 
+        // Add all gallery image deletions
         for (const img of images) {
-            // Prefer explicit storage paths when available.
-            const storageCandidate = img.storage_path || null;
-            if (storageCandidate) {
-                const imgRef = storageRefFromPathOrUrl(storageCandidate);
-                await tryDeleteStorageObject(imgRef);
+            const storagePath = img.storage_path || null;
+            if (storagePath) {
+                const imgRef = storageRefFromPathOrUrl(storagePath);
+                if (imgRef) deletionPromises.push(tryDeleteStorageObject(imgRef));
             } else if (img.image_url && String(img.image_url).includes('firebasestorage')) {
                 const imgRef = storageRefFromPathOrUrl(img.image_url);
-                await tryDeleteStorageObject(imgRef);
+                if (imgRef) deletionPromises.push(tryDeleteStorageObject(imgRef));
             }
-
-            await deleteDoc(doc(db, "album_images", img.id));
         }
 
+        if (deletionPromises.length > 0) {
+            logBackend('Delete Album Assets', 'INFO', `Deleting ${deletionPromises.length} storage objects...`);
+            await Promise.allSettled(deletionPromises);
+        }
+
+        // 3. Delete Firestore records for images
+        if (images.length > 0) {
+            logBackend('Delete Album Assets', 'INFO', `Deleting ${images.length} Firestore image records...`);
+            const firestorePromises = images.map(img => deleteDoc(doc(db, "album_images", img.id)));
+            await Promise.allSettled(firestorePromises);
+        }
+
+        // 4. Finally delete the album record itself
+        logBackend('Delete Album Assets', 'INFO', `Deleting album document: ${albumId}`);
         await deleteDoc(doc(db, "albums", albumId));
 
-        return { title: resolvedAlbum?.title || albumId, imagesDeleted: images.length };
+        return { title: albumTitle, imagesDeleted: images.length };
     }
 
     // --- FIRESTORE TESTIMONIALS LOGIC ---
@@ -1315,7 +1341,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const imgData = docSnap.data();
                 if (imgData.storage_path) {
                     const storageRef = ref(storage, imgData.storage_path);
-                    await deleteObject(storageRef).catch(e => console.warn("Storage deletion failed, record will still be removed", e));
+                    await tryDeleteStorageObject(storageRef);
                 }
 
                 // If this was the cover page, clear it on the album doc
@@ -1456,14 +1482,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             deleteSelectedAlbumsBtn.innerText = 'DELETING...';
 
             try {
-                for (const id of idsToDelete) {
+                logBackend('Bulk Delete Albums', 'INFO', `Starting bulk deletion of ${idsToDelete.length} albums...`);
+                const promises = idsToDelete.map(id => {
                     const album = window.albumsMap?.[id] || null;
-                    await deleteAlbumAndAssets(id, { album });
+                    return deleteAlbumAndAssets(id, { album });
+                });
+                
+                const results = await Promise.allSettled(promises);
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.filter(r => r.status === 'rejected').length;
+
+                if (failed > 0) {
+                    logBackend('Bulk Delete Albums', 'WARNING', `Bulk deletion finished with ${failed} failures and ${successful} successes.`);
+                    alert(`Bulk delete partially finished: ${successful} deleted, ${failed} failed. Check console for details.`);
+                } else {
+                    logBackend('Bulk Delete Albums', 'SUCCESS', `Deleted all ${idsToDelete.length} selected albums`);
                 }
-                logBackend('Bulk Delete Albums', 'SUCCESS', `Deleted ${idsToDelete.length} albums`);
             } catch (err) {
-                logBackend('Bulk Delete Albums', 'ERROR', 'Failed during bulk album deletion', err);
-                alert('Bulk delete failed: ' + (err.message || 'Unknown error'));
+                logBackend('Bulk Delete Albums', 'ERROR', 'Unexpected error during bulk album deletion initialization', err);
+                alert('Bulk delete failed to initialize: ' + (err.message || 'Unknown error'));
             } finally {
                 deleteSelectedAlbumsBtn.disabled = false;
                 deleteSelectedAlbumsBtn.innerHTML = prevHtml;
@@ -1489,14 +1526,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             deleteSelectedPreweddingBtn.innerText = 'DELETING...';
 
             try {
-                for (const id of idsToDelete) {
+                logBackend('Bulk Delete Pre-Wedding', 'INFO', `Starting bulk deletion of ${idsToDelete.length} pre-wedding albums...`);
+                const promises = idsToDelete.map(id => {
                     const album = window.albumsMap?.[id] || null;
-                    await deleteAlbumAndAssets(id, { album });
+                    return deleteAlbumAndAssets(id, { album });
+                });
+                
+                const results = await Promise.allSettled(promises);
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.filter(r => r.status === 'rejected').length;
+
+                if (failed > 0) {
+                    logBackend('Bulk Delete Pre-Wedding', 'WARNING', `Bulk deletion finished with ${failed} failures and ${successful} successes.`);
+                    alert(`Bulk delete partially finished: ${successful} deleted, ${failed} failed. Check console for details.`);
+                } else {
+                    logBackend('Bulk Delete Pre-Wedding', 'SUCCESS', `Deleted all ${idsToDelete.length} selected pre-wedding albums`);
                 }
-                logBackend('Bulk Delete Pre-Wedding', 'SUCCESS', `Deleted ${idsToDelete.length} pre-wedding albums`);
             } catch (err) {
-                logBackend('Bulk Delete Pre-Wedding', 'ERROR', 'Failed during bulk pre-wedding deletion', err);
-                alert('Bulk delete failed: ' + (err.message || 'Unknown error'));
+                logBackend('Bulk Delete Pre-Wedding', 'ERROR', 'Unexpected error during bulk pre-wedding deletion initialization', err);
+                alert('Bulk delete failed to initialize: ' + (err.message || 'Unknown error'));
             } finally {
                 deleteSelectedPreweddingBtn.disabled = false;
                 deleteSelectedPreweddingBtn.innerHTML = prevHtml;

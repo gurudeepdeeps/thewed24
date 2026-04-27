@@ -43,26 +43,6 @@
                 margin-bottom: 1.5rem;
             }
 
-            .album-item h3 {
-                font-size: 1.5rem !important;
-                line-height: 1.2;
-                max-width: 100%;
-                flex: 1 1 auto;
-            }
-
-            .album-item .flex-wrap {
-                gap: 1rem !important;
-                align-items: flex-start !important; /* Align to top */
-            }
-
-            .album-item .btn {
-                padding: 0.6rem 1.2rem !important;
-                font-size: 9px !important;
-                min-width: 110px;
-                text-align: center;
-                align-self: flex-start; /* Stop stretching vertically */
-                white-space: nowrap;
-            }
 
             /* Detail View Header Mobile Fix */
             #album-detail-view .detail-view-header {
@@ -139,7 +119,7 @@
         </div>
 
         <section id="album-grid-section" class="px-12 py-24 max-w-7xl mx-auto">
-            <div id="album-grid" class="grid grid-cols-2 md:grid-cols-2 gap-x-4 gap-y-16 md:gap-x-12 md:gap-y-32">
+            <div id="album-grid" class="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-10 md:gap-x-12 md:gap-y-32">
                 <!-- Data will load here from Supabase -->
                 <div class="col-span-full py-40 text-center flex flex-col items-center justify-center">
                     <div class="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-8"></div>

@@ -22,6 +22,24 @@ async function initHomeAbout() {
     console.log('[Home About] Starting sync...');
 
     try {
+        const imgEl = document.getElementById('homeAboutImage');
+        const bioEl = document.getElementById('homeAboutBio');
+        
+        // Add skeleton loaders
+        if (imgEl) {
+            imgEl.parentElement.classList.add('skeleton');
+            imgEl.style.opacity = '0';
+        }
+        if (bioEl) {
+            bioEl.innerHTML = `
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-4 w-3/4 mb-4"></div>
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-4 w-5/6"></div>
+            `;
+        }
+
         const profile = await getAboutProfile();
         
         if (profile) {
@@ -56,6 +74,11 @@ async function initHomeAbout() {
             const imgEl = document.getElementById('homeAboutImage');
             if (imgEl && profile.portrait_url) {
                 imgEl.src = profile.portrait_url;
+                imgEl.onload = () => {
+                    imgEl.parentElement.classList.remove('skeleton');
+                    imgEl.style.opacity = '1';
+                    imgEl.style.transition = 'opacity 0.5s ease';
+                };
             }
             
             console.log('[Home About] UI Synced successfully.');

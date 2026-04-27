@@ -19,7 +19,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadFilms(reset = false) {
         if (reset) {
             currentPage = 0;
-            grid.innerHTML = '';
+            if (grid) {
+                let skeletonsHtml = '';
+                for (let i = 0; i < 6; i++) {
+                    skeletonsHtml += `
+                        <div class="video-item mb-12 break-inside-avoid">
+                            <div class="skeleton aspect-video mb-6 w-full"></div>
+                            <div>
+                                <div class="skeleton h-8 w-2/3 mb-4"></div>
+                                <div class="skeleton h-4 w-1/2"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                grid.innerHTML = skeletonsHtml;
+            }
             if (loader) loader.classList.add('active');
             
             try {

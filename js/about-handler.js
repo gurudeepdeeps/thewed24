@@ -12,6 +12,24 @@ async function initAbout() {
     console.log('[About] Initializing content...');
 
     try {
+        const imgEl = document.getElementById('aboutPortrait');
+        const bioEl = document.getElementById('aboutBioText');
+        
+        // Add skeleton loaders
+        if (imgEl) {
+            imgEl.parentElement.classList.add('skeleton');
+            imgEl.style.opacity = '0';
+        }
+        if (bioEl) {
+            bioEl.innerHTML = `
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-4 w-3/4 mb-4"></div>
+                <div class="skeleton h-4 w-full mb-2"></div>
+                <div class="skeleton h-4 w-5/6"></div>
+            `;
+        }
+
         // 1. Fetch Profile
         const profile = await getAboutProfile();
         
@@ -30,7 +48,13 @@ async function initAbout() {
             }
             // If there's a portrait_url, set it directly
             if (profile.portrait_url && document.getElementById('aboutPortrait')) {
-                document.getElementById('aboutPortrait').src = profile.portrait_url;
+                const img = document.getElementById('aboutPortrait');
+                img.src = profile.portrait_url;
+                img.onload = () => {
+                    img.parentElement.classList.remove('skeleton');
+                    img.style.opacity = '1';
+                    img.style.transition = 'opacity 0.5s ease';
+                };
             }
         }
 

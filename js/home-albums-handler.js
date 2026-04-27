@@ -19,6 +19,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }[char]));
 
     try {
+        // Show skeleton loaders before fetching
+        let skeletonsHtml = '';
+        for (let i = 0; i < 4; i++) {
+            skeletonsHtml += `
+                <div class="album-preview-item h-full flex flex-col">
+                    <div class="skeleton aspect-video mb-8 w-full"></div>
+                    <div class="mt-8">
+                        <div class="skeleton h-8 w-2/3 mb-4"></div>
+                        <div class="skeleton h-4 w-1/2"></div>
+                    </div>
+                </div>
+            `;
+        }
+        homeAlbumsContainer.innerHTML = skeletonsHtml;
+
         const albums = await getFeaturedAlbums();
         
         if (albums && albums.length > 0) {
@@ -59,13 +74,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const oneLineText = (album.album_tagline || '').trim();
 
             albumEl.innerHTML = `
-                <div class="relative aspect-video bg-surface-container overflow-hidden mb-8 cursor-pointer" onclick="window.location.href='${basePage}?id=${album.id}'">
+                <div class="relative aspect-video bg-surface-container overflow-hidden mb-3 md:mb-8 cursor-pointer" onclick="window.location.href='${basePage}?id=${album.id}'">
                     ${coverImage} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                 </div>
-                <div class="mt-8">
+                <div class="mt-3 md:mt-8">
                     <div class="album-title-action-row">
                         <h3 class="album-title text-3xl italic font-bold font-serif text-primary">${album.title}</h3>
-                        <button class="album-action-btn btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='${basePage}?id=${album.id}'">View Full Album</button>
+                        <button class="album-action-btn btn btn-outline uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='${basePage}?id=${album.id}'">Full Album</button>
                     </div>
                     ${oneLineText ? `<p class="album-one-line-text">${escapeHtml(oneLineText)}</p>` : ''}
                 </div>

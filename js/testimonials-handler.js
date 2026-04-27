@@ -24,6 +24,26 @@ async function initTestimonials() {
 
     if (columns.length > 0) {
         try {
+            // Skeleton for Marquee
+            columns.forEach(col => {
+                let skel = '';
+                for(let i=0; i<2; i++) {
+                    skel += `
+                        <div class="testimonial-card-dribbble">
+                            <div class="skeleton h-4 w-1/2 mb-6"></div>
+                            <div class="skeleton h-4 w-full mb-2"></div>
+                            <div class="skeleton h-4 w-full mb-2"></div>
+                            <div class="skeleton h-4 w-3/4 mb-6"></div>
+                            <div class="card-footer mt-4 flex items-center">
+                                <div class="skeleton h-10 w-10 rounded-full"></div>
+                                <div class="skeleton h-4 w-1/3 ml-4"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                col.innerHTML = skel;
+            });
+
             const testimonials = await getTestimonials();
             logBackend('Fetch Testimonials', 'SUCCESS', `Loaded ${testimonials.length} reviews for Marquee`);
 
@@ -66,6 +86,23 @@ async function initTestimonials() {
 
     if (homeContainer) {
         try {
+            let skel = '';
+            for(let i=0; i<4; i++) {
+                skel += `
+                    <div class="testimonial-card-dribbble fade-in">
+                        <div class="skeleton h-4 w-1/2 mb-6"></div>
+                        <div class="skeleton h-4 w-full mb-2"></div>
+                        <div class="skeleton h-4 w-full mb-2"></div>
+                        <div class="skeleton h-4 w-3/4 mb-6"></div>
+                        <div class="card-footer mt-4 flex items-center">
+                            <div class="skeleton h-10 w-10 rounded-full"></div>
+                            <div class="skeleton h-4 w-1/3 ml-4"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            homeContainer.innerHTML = skel;
+
             const featured = await getFeaturedTestimonials();
             logBackend('Fetch Home Testimonials', 'SUCCESS', `Loaded ${featured.length} selected reviews for Home`);
 

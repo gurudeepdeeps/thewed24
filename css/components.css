@@ -910,7 +910,7 @@ header .btn-outline:hover {
 }
 
 .album-title-action-row .album-title {
-    flex: 1 1 18rem;
+    flex: 1 1 auto; /* Allow shrinking */
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -919,6 +919,13 @@ header .btn-outline:hover {
 
 .album-title-action-row .album-action-btn {
     flex: 0 0 auto;
+    margin-left: auto;
+    font-size: 7px !important;
+    padding: 0.2rem 0.5rem !important;
+    letter-spacing: 0.1em !important;
+    border-width: 1px !important;
+    min-height: 0 !important;
+    line-height: 1 !important;
 }
 
 .album-one-line-text,
@@ -938,29 +945,42 @@ header .btn-outline:hover {
     margin-top: -0.5rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .album-title-action-row {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        display: flex;
+        flex-direction: row; /* Back to row */
+        flex-wrap: wrap;
         align-items: center;
+        justify-content: space-between;
+        gap: 0.25rem;
     }
 
     .album-title-action-row .album-title {
-        white-space: normal;
+        white-space: nowrap;
         overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
+        text-overflow: ellipsis;
+        font-size: 0.75rem !important; 
+        line-height: 1.2;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .album-title-action-row .album-action-btn {
-        margin-left: 0;
+        margin-left: auto; /* Push to right */
+        padding: 0.1rem 0.2rem !important;
+        font-size: 6px !important; 
+        border-width: 1px !important;
+        min-height: 0 !important;
+        line-height: 1 !important;
+        letter-spacing: 0.05em !important;
     }
 
     .album-one-line-text,
     .album-detail-tagline {
-        font-size: 0.66rem;
-        letter-spacing: 0.16em;
+        font-size: 0.5rem !important;
+        letter-spacing: 0.05em !important;
+        line-height: 1.2 !important;
+        margin-top: 0.2rem !important;
     }
 }
 

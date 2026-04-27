@@ -74,10 +74,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchPublicAlbums() {
         try {
             dbg('init', { albumBasePage, albumCategory, href: window.location.href });
+            
+            const sharedAlbumId = pageParams.get('id');
+            if (!sharedAlbumId && albumGrid) {
+                let skeletonsHtml = '';
+                for (let i = 0; i < 6; i++) {
+                    skeletonsHtml += `
+                        <div class="album-item mb-12 break-inside-avoid">
+                            <div class="skeleton aspect-video mb-6 w-full"></div>
+                            <div>
+                                <div class="skeleton h-8 w-2/3 mb-4"></div>
+                                <div class="skeleton h-4 w-1/2"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                albumGrid.innerHTML = skeletonsHtml;
+            }
+
             const data = await getAlbums(albumCategory);
             albums = data;
 
-            const sharedAlbumId = pageParams.get('id');
             dbg('albums loaded', {
                 count: albums.length,
                 sharedAlbumId: sharedAlbumId || null,
@@ -125,10 +142,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <img ${coverImage} 
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                 </div>
-                <div class="mt-8">
+                <div class="mt-3 md:mt-8">
                     <div class="album-title-action-row">
                         <h3 class="album-title text-2xl italic font-semibold font-serif text-primary">${album.title}</h3>
-                        <button class="album-action-btn btn btn-outline py-2 px-4 text-[10px] uppercase tracking-widest whitespace-nowrap shrink-0" onclick="window.location.href='${albumBasePage}?id=${album.id}'">View Full Album</button>
+                        <button class="album-action-btn btn btn-outline uppercase tracking-widest whitespace-nowrap shrink-0" onclick="window.location.href='${albumBasePage}?id=${album.id}'">Full Album</button>
                     </div>
                     ${oneLineText ? `<p class="album-one-line-text">${escapeHtml(oneLineText)}</p>` : ''}
                 </div>
@@ -191,10 +208,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (!detailGrid) return;
 
-            detailGrid.innerHTML = `
-                <div class="col-span-full py-40 text-center flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-8"></div>
-                </div>`;
+            let skeletonsHtml = '';
+            for (let i = 0; i < 9; i++) {
+                const heights = ['h-[300px]', 'h-[450px]', 'h-[250px]', 'h-[400px]'];
+                const hClass = heights[i % heights.length];
+                skeletonsHtml += `
+                    <div class="detail-img-wrap inline-block w-full mb-2 md:mb-6 break-inside-avoid">
+                        <div class="skeleton w-full ${hClass} rounded-sm"></div>
+                    </div>
+                `;
+            }
+            detailGrid.innerHTML = skeletonsHtml;
 
             let images = await getAlbumImages(albumId);
             detailGrid.innerHTML = '';
@@ -213,7 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const imgWrapper = document.createElement('div');
                 const staggerClass = index < 12 ? `reveal-delay-${index + 1}` : '';
 
-                imgWrapper.className = `reveal-in detail-img-wrap inline-block w-full ${staggerClass}`;
+                imgWrapper.className = `reveal-in detail-img-wrap inline-block w-full mb-2 md:mb-6 ${staggerClass}`;
                 imgWrapper.style.breakInside = 'avoid';
 
                 imgWrapper.innerHTML = `

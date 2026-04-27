@@ -165,9 +165,7 @@ export async function getFeaturedAlbums() {
         const querySnapshot = await getDocs(q);
         const albums = querySnapshot.docs
             .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(a => a.access_level === "PUBLIC")
-            // Homepage "featured collections" should show client albums, not pre-wedding (ENGAGEMENT).
-            .filter(a => String(a.category || '').toUpperCase() !== 'ENGAGEMENT');
+            .filter(a => a.access_level === "PUBLIC");
         // Local sort: explicit featured order first, then fallback to newest.
         albums.sort((a, b) => {
             const orderA = Number(a.selected_home_order);

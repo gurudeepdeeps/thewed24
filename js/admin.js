@@ -962,12 +962,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const albumFeaturedWrap = document.getElementById('albumFeaturedOrderWrap');
     const albumFeaturedOrder = document.getElementById('addAlbumFeaturedOrder');
     function syncAlbumFeaturedUI() {
-        // Only client albums (not pre-wedding) can be ordered on the home page.
-        if (currentAlbumModalMode !== 'ALBUM') {
-            if (albumFeaturedWrap) albumFeaturedWrap.classList.add('hidden');
-            if (albumFeaturedOrder) albumFeaturedOrder.value = '';
-            return;
-        }
+        // Show/hide featured order based on if the album is selected for home
         if (addAlbumSelected?.checked) {
             if (albumFeaturedWrap) albumFeaturedWrap.classList.remove('hidden');
         } else {
@@ -1796,6 +1791,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         document.getElementById('addFilmCategory').value = film.category || 'WEDDING FILM';
+        document.getElementById('addFilmTagline').value = film.film_tagline || '';
         document.getElementById('addFilmStatus').value = film.status || 'PUBLISHED';
 
         const selectedCheckbox = document.getElementById('addFilmSelected');
@@ -1961,6 +1957,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isFeatured = document.getElementById('addFilmSelected').checked;
             const featuredOrderRaw = document.getElementById('addFilmFeaturedOrder')?.value || '';
             const videoUrlInput = document.getElementById('addFilmVideoUrl');
+            const filmTagline = document.getElementById('addFilmTagline').value.trim();
 
             try {
                 const featuredOrder = featuredOrderRaw ? Number(featuredOrderRaw) : null;
@@ -2003,8 +2000,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const filmData = {
                     title,
-
-
+                    film_tagline: filmTagline,
                     category,
                     status,
                     is_selected_work: isFeatured,

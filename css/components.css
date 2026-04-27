@@ -967,8 +967,8 @@ header .btn-outline:hover {
 
     .album-title-action-row .album-action-btn {
         margin-left: auto; /* Push to right */
-        padding: 0.1rem 0.2rem !important;
-        font-size: 6px !important; 
+        padding: 0.2rem 0.4rem !important;
+        font-size: 8px !important; 
         border-width: 1px !important;
         min-height: 0 !important;
         line-height: 1 !important;

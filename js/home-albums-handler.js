@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="mt-3 md:mt-8">
                     <div class="album-title-action-row">
                         <h3 class="album-title text-3xl italic font-bold font-serif text-primary">${album.title}</h3>
-                        <button class="album-action-btn btn btn-outline uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='${basePage}?id=${album.id}'">Full Album</button>
+                        <button class="album-action-btn btn btn-outline uppercase tracking-widest whitespace-nowrap shrink-0" onclick="event.stopPropagation(); window.location.href='${basePage}?id=${album.id}'">View Full Album</button>
                     </div>
                     ${oneLineText ? `<p class="album-one-line-text">${escapeHtml(oneLineText)}</p>` : ''}
                 </div>

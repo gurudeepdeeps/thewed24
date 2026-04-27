@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                             <div class="mt-8">
                                 <h3 class="text-2xl italic font-serif">${film.couple_name || film.title || ''}</h3>
+                                ${film.film_tagline ? `<p class="text-sm italic opacity-70 mt-2">${film.film_tagline}</p>` : ''}
                                 <p class="text-xs tracking-widest uppercase text-primary opacity-60 mt-3">${film.category || ''}</p>
                             </div>
                         </div>

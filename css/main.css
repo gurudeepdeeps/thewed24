@@ -792,6 +792,14 @@ ul {
     column-count: 1 !important;
 }
 
+.columns-2 {
+    column-count: 2 !important;
+}
+
+.columns-3 {
+    column-count: 3 !important;
+}
+
 @media (min-width: 768px) {
     .md\:columns-2 {
         column-count: 2 !important;

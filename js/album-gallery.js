@@ -229,13 +229,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const imgWrapper = document.createElement('div');
                 const staggerClass = index < 12 ? `reveal-delay-${index + 1}` : '';
                 
-                imgWrapper.className = `reveal-in mb-[58px] inline-block w-full ${staggerClass}`;
+                imgWrapper.className = `reveal-in detail-img-wrap inline-block w-full ${staggerClass}`;
                 imgWrapper.style.breakInside = 'avoid';
-                imgWrapper.style.marginBottom = '58px';
                 
                 imgWrapper.innerHTML = `
                     <div class="cursor-pointer" onclick="openLightboxAt(${index})">
-                        <img src="${img.image_url}" alt="Wedding Photograph" class="w-full h-auto shadow-sm hover:shadow-2xl transition-all duration-700 cursor-zoom-in">
+                        <img src="${img.image_url}" alt="Wedding Photograph" class="w-full h-auto shadow-sm hover:shadow-2xl transition-all duration-700 cursor-zoom-in" loading="lazy">
                     </div>
                 `;
                 
